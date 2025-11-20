@@ -26,7 +26,7 @@ export function createAllergenEditorLayout() {
                 </div>
                  <div class="sidebar-footer">
                     <button id="newMenuItemBtn" class="new-item-btn"><i class="fas fa-plus"></i> New Menu Item</button>
-                    <button id="seedMenuBtn" class="new-item-btn secondary-btn" style="margin-top: 10px; background-color: #6c757d;"><i class="fas fa-seedling"></i> Seed Menu</button>
+                    <button id="seedMenuBtn" class="new-item-btn secondary-btn"<i class="fas fa-seedling"></i> Seed Menu</button>
                 </div>
             </div>
             <div class="allergen-editor-main">
