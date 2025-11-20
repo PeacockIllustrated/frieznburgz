@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Get gatekeeper password from environment variable, fallback for backwards compatibility
     const GATEKEEPER_PASSWORD = window.env?.VITE_GATEKEEPER_PASSWORD || 
                                 import.meta?.env?.VITE_GATEKEEPER_PASSWORD || 
-                                "FNBSTAFF!2024"; // Updated password per security request
+                                "FNBSTAFF!"; // Updated password per security request
 
     const gatekeeperForm = document.getElementById('gatekeeper-form');
     const registrationFormContainer = document.getElementById('registration-form-container');
