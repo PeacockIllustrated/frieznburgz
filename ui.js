@@ -139,9 +139,20 @@ export function updateNavVisibility() {
     const handbookNav = document.getElementById('handbookNavGroup');
     const adminNav = document.getElementById('adminNavGroup');
 
+    // Helper to toggle visibility using classes
+    const setVisible = (el, visible) => {
+        if (!el) return;
+        el.style.display = ''; // Clear inline style
+        if (visible) {
+            el.classList.add('nav-visible');
+        } else {
+            el.classList.remove('nav-visible');
+        }
+    };
+
     // Hide all role-based navs by default
-    if (handbookNav) handbookNav.style.display = 'none';
-    if (adminNav) adminNav.style.display = 'none';
+    setVisible(handbookNav, false);
+    setVisible(adminNav, false);
 
     if (!user || !user.role) {
         return; // No user or role, so keep everything hidden
@@ -151,12 +162,12 @@ export function updateNavVisibility() {
 
     // Staff, Managers, and Admins see the Handbook
     if (['staff', 'manager', 'admin'].includes(role)) {
-        if (handbookNav) handbookNav.style.display = 'block';
+        setVisible(handbookNav, true);
     }
 
     // Only Managers and Admins see the Admin section
     if (['manager', 'admin'].includes(role)) {
-        if (adminNav) adminNav.style.display = 'block';
+        setVisible(adminNav, true);
     }
 }
 

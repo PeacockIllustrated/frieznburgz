@@ -92,7 +92,16 @@
     margin-top: 4px;
 }
 
-/* Mobile Responsive for Incidents */
+/* --- Mobile Navigation (Toolbar) Adjustments --- */
+/* Default: Hidden groups */
+.nav-group {
+    display: none;
+}
+/* Helper class to show groups */
+.nav-group.nav-visible {
+    display: block;
+}
+
 @media screen and (max-width: 768px) {
     /* Toolbar: Stack horizontally (side-by-side) with wrapping */
     .incidents-toolbar {
@@ -128,5 +137,44 @@
     .incidents-table td:nth-child(5) {
          max-width: 150px;
          white-space: normal; /* Allow wrapping for long text columns */
+    }
+
+    /* --- Mobile Navigation Sidebar Fixes --- */
+    /* Ensure the sidebar allows flex wrapping for horizontal groups */
+    .dashboard-sidebar {
+        /* These are already set in style.css but repeated for clarity/specificity */
+        flex-direction: row;
+        flex-wrap: wrap; /* Allow content to wrap */
+        overflow-x: visible; /* Remove scrolling */
+        overflow-y: visible;
+        height: auto; /* Expand height */
+    }
+
+    .sidebar-nav {
+        flex-wrap: wrap; /* Allow nav items and groups to wrap */
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    /* Nav Groups: Make them side-by-side on mobile */
+    .nav-group.nav-visible {
+        display: block;
+        flex: 1 1 45%; /* Each group takes ~half width */
+        min-width: 150px;
+        padding: 5px;
+        margin-top: 0; /* Remove default margin if any */
+    }
+
+    /* Hide group titles to match the reference image */
+    .nav-group-title {
+        display: none;
+    }
+
+    /* Ensure items inside groups stack vertically */
+    .nav-group .nav-item {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px;
+        justify-content: flex-start;
     }
 }
