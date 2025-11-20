@@ -10,7 +10,12 @@ import { FSA_ALLERGENS } from './constants.js';
  */
 export function createPageHtml(title, contentHtml) {
     return `
-        <h2 class="page-title">${title}</h2>
+        <div class="page-header">
+             <h2 class="page-title">${title}</h2>
+             <div class="header-actions">
+                 <!-- Actions will be injected here if needed, or controlled by CSS -->
+             </div>
+        </div>
         <div class="page-content">
             ${contentHtml}
         </div>
@@ -50,9 +55,15 @@ export function createAllergenMatrixForStaff(matrixSnapshot) {
     `;
 
     matrixSnapshot.forEach(item => {
+        // Make the row clickable by adding a data-id attribute
         tableHtml += `
-            <tr>
-                <td>${item.name}</td>
+            <tr class="clickable-row" data-item-id="${item.id}">
+                <td>
+                    <div class="item-name-cell">
+                        ${item.name}
+                        <i class="fas fa-info-circle info-icon"></i>
+                    </div>
+                </td>
                 ${sortedAllergens.map(allergenId => {
                     const status = item.allergens[allergenId] || 'unknown';
                     return `<td class="status-${status}">${status.replace(/_/g, ' ')}</td>`;

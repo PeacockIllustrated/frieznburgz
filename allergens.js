@@ -6,6 +6,7 @@ import { showToast } from './ui.js';
 import { createPageHtml, createAllergenMatrixForStaff } from './templates/allergens-template.js';
 import { createAllergenEditorLayout, createAllergenGrid, createNotesSection } from './templates/allergens-editor-template.js';
 import { FSA_ALLERGENS, ALLERGEN_STATUS } from './constants.js';
+import { locations } from './config.js';
 
 
 // --- Page Rendering Functions ---
@@ -43,11 +44,354 @@ export async function renderAllergenMatrixPage() {
 
         pageContainer.innerHTML = createPageHtml('Allergen Matrix', content);
 
+        // Inject the global "Log Interaction" button into the header
+        injectLogButton(pageContainer);
+
+        // Add event listeners for row clicks (Item Details)
+        const rows = pageContainer.querySelectorAll('.clickable-row');
+        rows.forEach(row => {
+            row.addEventListener('click', () => {
+                const itemId = row.dataset.itemId;
+                const itemData = latestVersion.matrixSnapshot.find(i => i.id === itemId);
+                openItemDetailsModal(itemData);
+            });
+        });
+
     } catch (error) {
         console.error("Error fetching latest allergen version:", error);
         pageContainer.innerHTML = createPageHtml('Allergen Matrix', '<p class="error-message">Could not load the allergen matrix.</p>');
+    } finally {
+        // Always try to inject the button, even if data loading fails
+        injectLogButton(pageContainer);
     }
 }
+
+function injectLogButton(container) {
+    const headerActions = container.querySelector('.header-actions');
+    if (headerActions) {
+        const btn = document.createElement('button');
+        btn.className = 'button';
+        btn.innerHTML = '<i class="fas fa-clipboard-list"></i> Log Interaction';
+        btn.onclick = () => openIncidentLogModal();
+        headerActions.appendChild(btn);
+    }
+}
+
+function openItemDetailsModal(item) {
+    if (!item) return;
+
+    // Filter allergens to show only those that are NOT "free" or "unknown" (unless strictly required to show all)
+    // Or just show the grid cleanly. Let's show a nice summary list.
+    const relevantAllergens = FSA_ALLERGENS.filter(a => {
+        const status = item.allergens[a.id];
+        return status === 'contains' || status === 'may_contain';
+    });
+
+    const allergenListHtml = relevantAllergens.length > 0
+        ? `<ul class="detail-allergen-list">
+            ${relevantAllergens.map(a => `
+                <li class="status-${item.allergens[a.id]}">
+                    <i class="fas ${a.iconKey}"></i>
+                    <strong>${a.name}:</strong> ${item.allergens[a.id].replace('_', ' ')}
+                </li>
+            `).join('')}
+           </ul>`
+        : '<p>No major allergens declared (Free/Unknown).</p>';
+
+    const modalBody = `
+        <div class="item-details-modal">
+            <div class="item-meta">
+                <span class="badge category-badge">${item.category || 'Uncategorized'}</span>
+            </div>
+            <h4>Allergen Information</h4>
+            ${allergenListHtml}
+
+            ${item.notes ? `<h4>Notes</h4><p>${item.notes}</p>` : ''}
+
+            <hr>
+            <button id="logItemInteractionBtn" class="button full-width">
+                <i class="fas fa-exclamation-circle"></i> Log Allergy Interaction for this Item
+            </button>
+        </div>
+    `;
+
+    window.mainApp.openModal(item.name, modalBody, '');
+
+    document.getElementById('logItemInteractionBtn').addEventListener('click', () => {
+        // Close current modal and open log modal with item context
+        window.mainApp.closeModal();
+        // Small delay to allow smooth transition if needed, but usually instant is fine
+        setTimeout(() => openIncidentLogModal(item), 100);
+    });
+}
+
+function openIncidentLogModal(itemContext = null) {
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+        showToast("You must be logged in to log an incident.", "error");
+        return;
+    }
+
+    const title = itemContext ? `Log Interaction: ${itemContext.name}` : 'Log Allergy Interaction';
+
+    const modalBody = `
+        <form id="incidentForm" class="incident-form">
+            <div class="form-group">
+                <label>Store Location</label>
+                <select id="incidentStore" class="modal-input" required>
+                    <option value="">Select Store...</option>
+                    ${locations.map(loc => `<option value="${loc.id}">${loc.name}</option>`).join('')}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Customer Allergy (Select all that apply)</label>
+                <div class="checkbox-grid">
+                    ${FSA_ALLERGENS.map(a => `
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="customerAllergy" value="${a.name}">
+                            ${a.name}
+                        </label>
+                    `).join('')}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Item Ordered / Discussed</label>
+                <input type="text" id="incidentItem" class="modal-input"
+                    value="${itemContext ? itemContext.name : ''}"
+                    placeholder="e.g., Classic Burger (or General Inquiry)">
+            </div>
+
+            <div class="form-group">
+                <label>Action Taken</label>
+                <input type="text" id="incidentAction" class="modal-input" required
+                    placeholder="e.g., Checked matrix, advised customer...">
+            </div>
+
+            <div class="form-group">
+                <label>Outcome</label>
+                <select id="incidentOutcome" class="modal-input" required>
+                    <option value="served_safely">Served Safely</option>
+                    <option value="refused">Refused Service (Safety)</option>
+                    <option value="escalated">Escalated to Manager</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea id="incidentNotes" class="modal-textarea" placeholder="Any additional details..."></textarea>
+            </div>
+        </form>
+    `;
+
+    const modalFooter = `<button id="submitIncidentBtn" class="button-primary">Submit Log</button>`;
+
+    window.mainApp.openModal(title, modalBody, modalFooter);
+
+    // Pre-select user's location if available
+    if (currentUser.locationId && currentUser.locationId !== 'all_locations') {
+        const locSelect = document.getElementById('incidentStore');
+        if (locSelect) locSelect.value = currentUser.locationId;
+    }
+
+    document.getElementById('submitIncidentBtn').addEventListener('click', async (e) => {
+        e.preventDefault();
+        const store = document.getElementById('incidentStore').value;
+        const itemOrdered = document.getElementById('incidentItem').value.trim();
+        const actionTaken = document.getElementById('incidentAction').value.trim();
+        const outcome = document.getElementById('incidentOutcome').value;
+        const notes = document.getElementById('incidentNotes').value.trim();
+
+        const allergyCheckboxes = document.querySelectorAll('input[name="customerAllergy"]:checked');
+        const customerAllergies = Array.from(allergyCheckboxes).map(cb => cb.value);
+
+        if (!store || !actionTaken || !outcome) {
+            showToast("Please fill in all required fields.", "error");
+            return;
+        }
+
+        if (customerAllergies.length === 0) {
+            if(!confirm("No specific allergies selected. Submit anyway?")) return;
+        }
+
+        const incidentData = {
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            createdBy: currentUser.uid,
+            createdByName: currentUser.displayName || currentUser.email,
+            store,
+            storeName: locations.find(l => l.id === store)?.name || store,
+            customerAllergies,
+            itemOrdered: itemOrdered || "General Inquiry",
+            actionTaken,
+            outcome,
+            notes
+        };
+
+        try {
+            await db.collection('allergyIncidents').add(incidentData);
+            showToast("Incident logged successfully.", "success");
+            window.mainApp.closeModal();
+        } catch (error) {
+            console.error("Error logging incident:", error);
+            showToast("Failed to log incident.", "error");
+        }
+    });
+}
+
+export async function renderAllergyIncidentsPage() {
+    const pageContainer = document.getElementById('allergenIncidentsPage');
+
+    const headerHtml = `
+        <div class="incidents-toolbar">
+            <div class="filter-group">
+                <label>Status:</label>
+                <select id="filterOutcome">
+                    <option value="">All Outcomes</option>
+                    <option value="served_safely">Served Safely</option>
+                    <option value="refused">Refused</option>
+                    <option value="escalated">Escalated</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Store:</label>
+                <select id="filterStore">
+                    <option value="">All Stores</option>
+                    ${locations.map(loc => `<option value="${loc.id}">${loc.name}</option>`).join('')}
+                </select>
+            </div>
+             <div class="filter-group">
+                 <label>Date Limit:</label>
+                 <select id="filterLimit">
+                    <option value="30">Last 30 Entries</option>
+                    <option value="100">Last 100 Entries</option>
+                    <option value="500">Last 500 Entries</option>
+                 </select>
+            </div>
+            <button id="refreshIncidentsBtn" class="button"><i class="fas fa-sync"></i> Refresh</button>
+            <button id="exportIncidentsBtn" class="button"><i class="fas fa-file-csv"></i> Export CSV</button>
+        </div>
+        <div id="incidentsTableContainer">
+            <p>Loading incidents...</p>
+        </div>
+    `;
+
+    pageContainer.innerHTML = createPageHtml('Allergy Incident Logs', headerHtml);
+
+    document.getElementById('refreshIncidentsBtn').addEventListener('click', fetchAndRenderIncidents);
+    document.getElementById('exportIncidentsBtn').addEventListener('click', exportIncidentsToCsv);
+    document.getElementById('filterOutcome').addEventListener('change', fetchAndRenderIncidents);
+    document.getElementById('filterStore').addEventListener('change', fetchAndRenderIncidents);
+    document.getElementById('filterLimit').addEventListener('change', fetchAndRenderIncidents);
+
+    await fetchAndRenderIncidents();
+}
+
+let currentIncidents = []; // Cache for export
+
+async function fetchAndRenderIncidents() {
+    const container = document.getElementById('incidentsTableContainer');
+    const outcomeFilter = document.getElementById('filterOutcome').value;
+    const storeFilter = document.getElementById('filterStore').value;
+    const limit = parseInt(document.getElementById('filterLimit').value);
+
+    container.innerHTML = '<div class="loading-spinner">Loading...</div>';
+
+    try {
+        let query = db.collection('allergyIncidents').orderBy('createdAt', 'desc');
+
+        if (outcomeFilter) {
+            query = query.where('outcome', '==', outcomeFilter);
+        }
+        if (storeFilter) {
+            query = query.where('store', '==', storeFilter);
+        }
+
+        query = query.limit(limit);
+
+        const snapshot = await query.get();
+        currentIncidents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        if (currentIncidents.length === 0) {
+            container.innerHTML = '<p>No incidents found matching criteria.</p>';
+            return;
+        }
+
+        const tableHtml = `
+            <table class="incidents-table">
+                <thead>
+                    <tr>
+                        <th>Date/Time</th>
+                        <th>Store</th>
+                        <th>Staff</th>
+                        <th>Item</th>
+                        <th>Allergy</th>
+                        <th>Outcome</th>
+                        <th>Action/Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${currentIncidents.map(incident => {
+                        const date = incident.createdAt ? new Date(incident.createdAt.seconds * 1000).toLocaleString() : 'N/A';
+                        const outcomeClass = incident.outcome === 'refused' ? 'status-refused' :
+                                             incident.outcome === 'escalated' ? 'status-escalated' : 'status-success';
+
+                        return `
+                            <tr>
+                                <td>${date}</td>
+                                <td>${incident.storeName || incident.store}</td>
+                                <td>${incident.createdByName || 'Unknown'}</td>
+                                <td>${incident.itemOrdered}</td>
+                                <td>${(incident.customerAllergies || []).join(', ')}</td>
+                                <td><span class="badge ${outcomeClass}">${incident.outcome.replace('_', ' ')}</span></td>
+                                <td>
+                                    <div class="action-text"><strong>Action:</strong> ${incident.actionTaken}</div>
+                                    ${incident.notes ? `<div class="notes-text"><em>${incident.notes}</em></div>` : ''}
+                                </td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
+        `;
+
+        container.innerHTML = tableHtml;
+
+    } catch (error) {
+        console.error("Error loading incidents:", error);
+        container.innerHTML = `<p class="error-message">Error loading data: ${error.message}</p>`;
+    }
+}
+
+function exportIncidentsToCsv() {
+    if (!currentIncidents || currentIncidents.length === 0) {
+        showToast("No data to export.", "info");
+        return;
+    }
+
+    const csvData = currentIncidents.map(row => ({
+        Date: row.createdAt ? new Date(row.createdAt.seconds * 1000).toISOString() : '',
+        Store: row.storeName || row.store,
+        Staff: row.createdByName || row.createdBy,
+        Item: row.itemOrdered,
+        Allergies: (row.customerAllergies || []).join('; '),
+        Outcome: row.outcome,
+        Action: row.actionTaken,
+        Notes: row.notes || ''
+    }));
+
+    const csv = Papa.unparse(csvData);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `allergy_incidents_${new Date().toISOString().slice(0,10)}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
 
 export async function renderAllergenProceduresPage() {
     const content = '<h2>Allergen Procedures</h2><p>Standard operating procedures for handling allergens.</p>';

@@ -24,6 +24,12 @@ service cloud.firestore {
       let staffData = getUserStaffData();
       return staffData.locationId == 'all_locations' || staffData.locationId == locationId;
     }
+
+    // Helper to check if user is a manager or admin
+    function isManagerOrAdmin() {
+       let role = getUserStaffData().role;
+       return isAdmin() || role == 'manager' || role == 'admin';
+    }
     
     // Staff collection - users can read their own document, admins can read/write all
     match /staff/{userId} {
@@ -78,6 +84,13 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     
+    // NEW: Allergy Incidents
+    match /allergyIncidents/{incidentId} {
+      allow read: if isManagerOrAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if isManagerOrAdmin();
+    }
+
     // Loyalty system
     match /loyaltyCards/{userId} {
       allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
@@ -123,4 +136,3 @@ service cloud.firestore {
     }
   }
 }
-

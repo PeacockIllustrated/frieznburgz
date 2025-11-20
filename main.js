@@ -23,7 +23,8 @@ import {
     renderAllergenPrintPage,
     renderAllergenEditorPage,
     renderAllergenVersionsPage,
-    renderAllergenImportPage
+    renderAllergenImportPage,
+    renderAllergyIncidentsPage
 } from './allergens.js';
 import { renderStaffAllergenMatrixPage } from './handbook.js';
 import { renderProceduresPage } from './handbook/allergens/procedures.js';
@@ -241,6 +242,9 @@ async function renderPageContent(pageId) {
             break;
         case 'allergen-import':
             await renderAllergenImportPage();
+            break;
+        case 'allergen-incidents':
+            await renderAllergyIncidentsPage();
             break;
 
         default:

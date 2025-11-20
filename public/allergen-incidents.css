@@ -1,0 +1,132 @@
+
+/* --- Incident Logging & Reports --- */
+
+.incidents-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.incidents-toolbar .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.incidents-toolbar label {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #666;
+}
+
+.incidents-toolbar select,
+.incidents-toolbar button {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: inherit;
+}
+
+.incidents-toolbar button {
+    align-self: flex-end; /* Align with inputs if they have labels */
+    background-color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.incidents-toolbar button:hover {
+    background-color: #eee;
+}
+
+/* Incident Table */
+.incidents-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background-color: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.incidents-table th,
+.incidents-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    vertical-align: top;
+}
+
+.incidents-table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+    color: #333;
+}
+
+.incidents-table tr:hover {
+    background-color: #fafafa;
+}
+
+.status-refused {
+    background-color: #f44336;
+    color: white;
+}
+.status-escalated {
+    background-color: #ff9800;
+    color: white;
+}
+.status-success {
+    background-color: #4caf50;
+    color: white;
+}
+
+.action-text {
+    font-size: 0.9em;
+}
+.notes-text {
+    font-size: 0.85em;
+    color: #666;
+    margin-top: 4px;
+}
+
+/* Mobile Responsive for Incidents */
+@media screen and (max-width: 768px) {
+    /* Toolbar: Stack horizontally (side-by-side) with wrapping */
+    .incidents-toolbar {
+        flex-direction: row; /* Explicitly set row */
+        flex-wrap: wrap;     /* Allow wrapping */
+        justify-content: flex-start;
+    }
+
+    .incidents-toolbar .filter-group {
+        flex: 1 1 45%; /* Grow to fill space, base width ~45% to fit 2 per row */
+        min-width: 120px;
+    }
+
+    .incidents-toolbar button {
+        flex: 1 1 auto;
+        margin-top: auto; /* Push to bottom alignment */
+    }
+
+    /* Table: Stack rows on very small screens or make scrollable */
+    #incidentsTableContainer {
+        overflow-x: auto;
+    }
+
+    .incidents-table th, .incidents-table td {
+        white-space: nowrap; /* Prevent wrapping inside cells to keep table structure, or allow wrapping if preferred */
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    .incidents-table th:nth-child(4), /* Item */
+    .incidents-table td:nth-child(4),
+    .incidents-table th:nth-child(5), /* Allergy */
+    .incidents-table td:nth-child(5) {
+         max-width: 150px;
+         white-space: normal; /* Allow wrapping for long text columns */
+    }
+}
