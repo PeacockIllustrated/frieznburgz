@@ -103,78 +103,92 @@
 }
 
 @media screen and (max-width: 768px) {
-    /* Toolbar: Stack horizontally (side-by-side) with wrapping */
+    /* --- Incidents Toolbar (Horizontal Scroll) --- */
     .incidents-toolbar {
-        flex-direction: row; /* Explicitly set row */
-        flex-wrap: wrap;     /* Allow wrapping */
+        flex-direction: row;
+        flex-wrap: nowrap;     /* Prevent wrapping */
+        overflow-x: auto;      /* Enable scrolling */
         justify-content: flex-start;
+        padding-bottom: 10px; /* Space for scrollbar */
+        -webkit-overflow-scrolling: touch;
     }
 
-    .incidents-toolbar .filter-group {
-        flex: 1 1 45%; /* Grow to fill space, base width ~45% to fit 2 per row */
-        min-width: 120px;
-    }
-
+    .incidents-toolbar .filter-group,
     .incidents-toolbar button {
-        flex: 1 1 auto;
-        margin-top: auto; /* Push to bottom alignment */
+        flex: 0 0 auto; /* Prevent shrinking/growing */
+        width: auto;
+        min-width: auto;
     }
 
-    /* Table: Stack rows on very small screens or make scrollable */
+    /* Table adjustments */
     #incidentsTableContainer {
         overflow-x: auto;
     }
 
     .incidents-table th, .incidents-table td {
-        white-space: nowrap; /* Prevent wrapping inside cells to keep table structure, or allow wrapping if preferred */
+        white-space: nowrap;
         font-size: 14px;
         padding: 8px;
     }
 
-    .incidents-table th:nth-child(4), /* Item */
+    .incidents-table th:nth-child(4),
     .incidents-table td:nth-child(4),
-    .incidents-table th:nth-child(5), /* Allergy */
+    .incidents-table th:nth-child(5),
     .incidents-table td:nth-child(5) {
-         max-width: 150px;
-         white-space: normal; /* Allow wrapping for long text columns */
+         max-width: 200px;
+         white-space: normal;
+         min-width: 120px; /* Ensure minimum width for wrapped columns */
     }
 
-    /* --- Mobile Navigation Sidebar Fixes --- */
-    /* Ensure the sidebar allows flex wrapping for horizontal groups */
+    /* --- Mobile Sidebar Navigation (Horizontal Scroll) --- */
     .dashboard-sidebar {
-        /* These are already set in style.css but repeated for clarity/specificity */
         flex-direction: row;
-        flex-wrap: wrap; /* Allow content to wrap */
-        overflow-x: visible; /* Remove scrolling */
-        overflow-y: visible;
-        height: auto; /* Expand height */
+        flex-wrap: nowrap; /* Force single line */
+        overflow-x: auto; /* Scrollable */
+        overflow-y: hidden;
+        height: auto;
+        width: 100%;
+        justify-content: flex-start;
+        -webkit-overflow-scrolling: touch;
+        background-color: var(--red); /* Ensure background covers scroll area */
     }
 
     .sidebar-nav {
-        flex-wrap: wrap; /* Allow nav items and groups to wrap */
-        width: 100%;
-        justify-content: flex-start;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap; /* Force single line */
+        align-items: center;
+        gap: 10px;
+        padding: 0 10px;
+        width: max-content; /* Allow it to grow beyond viewport */
     }
 
-    /* Nav Groups: Make them side-by-side on mobile */
+    /* Nav Groups: Display contents horizontally side-by-side */
     .nav-group.nav-visible {
-        display: block;
-        flex: 1 1 45%; /* Each group takes ~half width */
-        min-width: 150px;
-        padding: 5px;
-        margin-top: 0; /* Remove default margin if any */
+        display: flex; /* Use flex to lay out items horizontally */
+        flex-direction: row;
+        gap: 10px;
+        flex: 0 0 auto; /* Don't shrink */
+        margin: 0;
+        padding: 0;
+        width: auto;
+        min-width: 0;
     }
 
-    /* Hide group titles to match the reference image */
     .nav-group-title {
         display: none;
     }
 
-    /* Ensure items inside groups stack vertically */
+    /* Nav Items: Ensure they stay side-by-side */
+    .nav-item,
     .nav-group .nav-item {
-        width: 100%;
-        box-sizing: border-box;
-        padding: 10px;
-        justify-content: flex-start;
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+        flex: 0 0 auto; /* Don't shrink */
+        width: auto;
+        margin: 0;
+        padding: 10px 15px;
+        border-bottom: none; /* Remove previously added border */
     }
 }
