@@ -4,6 +4,7 @@
 import { db } from './firebase.js';
 import { createMatrixPageLayout, renderMatrixTable, renderItemDrawer, renderBanner } from './templates/handbook-template.js';
 import { FSA_ALLERGENS } from './constants.js';
+import { openIncidentLogModal } from './allergens.js';
 
 // --- State Management ---
 let allItems = []; // Full dataset from Firestore
@@ -206,12 +207,14 @@ function setupEventListeners() {
 }
 
 function handleMatrixInteraction(event) {
-    if (event.type === 'click' || (event.type === 'keydown' && event.key === 'Enter')) {
+    if (event.type === 'click' || (event.type === 'keydown' && (event.key === 'Enter' || event.key === ' '))) {
         const row = event.target.closest('tr[data-item-id]');
         if (row) {
             event.preventDefault();
             openDrawer(row.dataset.itemId);
         }
+    } else if (event.type === 'keydown' && event.key === 'Escape') {
+        closeDrawer();
     }
 }
 
@@ -222,6 +225,8 @@ function handleMatrixInteraction(event) {
  * Applies all active filters to the dataset and re-renders the matrix.
  */
 function filterAndRenderMatrix() {
+    if (!allItems || allItems.length === 0) return;
+
     const startTime = performance.now();
 
     const searchText = document.getElementById('matrixSearchInput').value.toLowerCase();
@@ -274,6 +279,39 @@ function openDrawer(itemId) {
     const closeBtn = document.getElementById('closeDrawerBtn');
     closeBtn.addEventListener('click', closeDrawer);
     overlay.addEventListener('click', closeDrawer);
+
+    // Trap focus
+    const focusableElements = drawer.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    drawer.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') {
+            if (e.shiftKey) { // Shift + Tab
+                if (document.activeElement === firstElement) {
+                    e.preventDefault();
+                    lastElement.focus();
+                }
+            } else { // Tab
+                if (document.activeElement === lastElement) {
+                    e.preventDefault();
+                    firstElement.focus();
+                }
+            }
+        } else if (e.key === 'Escape') {
+            closeDrawer();
+        }
+    });
+
+    const logBtn = document.getElementById('logItemInteractionBtn');
+    if(logBtn) {
+        logBtn.addEventListener('click', () => {
+            closeDrawer();
+            // Small delay to allow smooth transition
+            setTimeout(() => openIncidentLogModal(item), 100);
+        });
+    }
+
     closeBtn.focus(); // For accessibility
 }
 

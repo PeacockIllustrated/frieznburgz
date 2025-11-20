@@ -2,50 +2,49 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Helper function to check if user is authenticated
+    // --- Helper Functions ---
+
     function isAuthenticated() {
       return request.auth != null;
     }
     
-    // Helper function to check if user is admin
     function isAdmin() {
       return isAuthenticated() && 
              exists(/databases/$(database)/documents/_internal/admin_config) &&
              request.auth.uid in get(/databases/$(database)/documents/_internal/admin_config).data.adminUids;
     }
     
-    // Helper function to get user's staff data
     function getUserStaffData() {
       return get(/databases/$(database)/documents/staff/$(request.auth.uid)).data;
     }
     
-    // Helper function to check if user has access to location
     function hasLocationAccess(locationId) {
       let staffData = getUserStaffData();
       return staffData.locationId == 'all_locations' || staffData.locationId == locationId;
     }
 
-    // Helper to check if user is a manager or admin
+    // Check if user is a manager or admin
     function isManagerOrAdmin() {
-       let role = getUserStaffData().role;
-       return isAdmin() || role == 'manager' || role == 'admin';
+       // Optimisation: check isAdmin first to avoid extra read if possible, though getUserStaffData is needed for manager check
+       // Note: in production rules, caching or custom claims are better for this.
+       // Here we rely on the staff document.
+       return isAdmin() || (isAuthenticated() && getUserStaffData().role in ['manager', 'admin']);
     }
-    
-    // Staff collection - users can read their own document, admins can read/write all
+
+    // --- Collection Rules ---
+
+    // Staff collection
     match /staff/{userId} {
       allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
       allow write: if isAdmin();
     }
     
-    // Locations and their subcollections
+    // Locations
     match /locations/{locationId} {
-      // Location document itself - only admins
       match /{document=**} {
         allow read: if isAuthenticated();
         allow write: if isAdmin();
       }
-      
-      // Items subcollection - staff can read items for their location, admins can manage all
       match /items/{itemId} {
         allow read: if isAuthenticated() && hasLocationAccess(locationId);
         allow create, update: if isAuthenticated() && hasLocationAccess(locationId);
@@ -53,7 +52,7 @@ service cloud.firestore {
       }
     }
     
-    // Orders collection
+    // Orders
     match /orders/{orderId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated();
@@ -61,40 +60,67 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
     
-    // Wastage collection
+    // Wastage
     match /wastage/{wasteId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated();
       allow update, delete: if isAdmin();
     }
     
-    // Menu items and allergen management
+    // --- Allergens Module Rules (Tasks 9) ---
+
+    // Menu Items: Admin writes, Staff reads
     match /menuItems/{itemId} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin();
+      allow write: if isAdmin(); // Covers create/update/delete
     }
     
+    // Allergen Versions: Admin writes (publish), Staff reads
     match /allergenVersions/{versionId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
     }
     
+    // FSA Allergens: Read only for most, Admin writes
     match /allergens/{allergenId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
     }
     
-    // NEW: Allergy Incidents
+    // Allergy Incidents
+    // Create: Any authenticated staff (Task 7 requirement)
+    // Read/Update/Delete: Manager or Admin only
     match /allergyIncidents/{incidentId} {
+      allow create: if isAuthenticated() &&
+                      request.resource.data.keys().hasAll(['store', 'outcome', 'actionTaken']) &&
+                      request.resource.data.outcome in ['served_safely', 'refused', 'escalated'] &&
+                      request.resource.data.notes.size() < 1000; // Basic length cap
+
       allow read: if isManagerOrAdmin();
-      allow create: if isAuthenticated();
       allow update, delete: if isManagerOrAdmin();
     }
 
-    // Loyalty system
+    // Training Modules
+    match /trainingModules/{moduleId} {
+      allow read: if isAuthenticated();
+      allow write: if isManagerOrAdmin();
+    }
+
+    // Training Acknowledgements (Task 9)
+    // Create: Only for own UID, immutable (cannot update/delete unless admin)
+    match /trainingAcks/{ackId} {
+      allow read: if isAuthenticated() && (resource.data.uid == request.auth.uid || isManagerOrAdmin());
+      allow create: if isAuthenticated() &&
+                      request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // --- End Allergens Module ---
+
+    // Loyalty
     match /loyaltyCards/{userId} {
       allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
-      allow write: if isAuthenticated(); // Users can create their own, admins can modify any
+      allow write: if isAuthenticated();
     }
     
     match /loyaltyPrograms/{programId} {
@@ -112,27 +138,27 @@ service cloud.firestore {
       allow create: if isAuthenticated();
     }
     
-    // Training progress
+    // User Training Progress (Legacy?)
     match /users/{userId} {
       allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
       allow write: if isAuthenticated() && request.auth.uid == userId;
     }
     
-    // Internal configuration
+    // Internal config
     match /_internal/{document=**} {
       allow read, write: if isAdmin();
     }
     
-    // Suppliers collection
+    // Suppliers
     match /suppliers/{supplierId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
     }
     
-    // Rota/scheduling (if stored separately)
+    // Rota
     match /rota/{document=**} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated(); // Staff can view, managers/admins can edit
+      allow write: if isAuthenticated();
     }
   }
 }

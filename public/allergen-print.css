@@ -1,0 +1,268 @@
+/* --- allergen-print.css --- */
+/* Styles specific to the print view and actual printing */
+
+.print-page-container {
+    background: white;
+    color: black;
+    font-family: 'Futura', sans-serif; /* Or fallback */
+    padding: 20px;
+    max-width: 100%;
+}
+
+.print-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #333;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.print-header-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.print-title {
+    font-size: 24px;
+    font-weight: 900;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.print-meta {
+    font-size: 12px;
+    margin-top: 5px;
+    color: #555;
+}
+
+.print-header-right {
+    text-align: right;
+}
+
+.qr-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 10px;
+}
+
+.qr-container canvas {
+    width: 80px;
+    height: 80px;
+}
+
+/* Specals Banner */
+.print-banner {
+    background-color: #d32f2f;
+    color: white;
+    padding: 8px 15px;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    display: block; /* Ensure visibility */
+}
+
+/* Legend */
+.print-legend {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px;
+    font-size: 12px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    justify-content: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.legend-box {
+    width: 16px;
+    height: 16px;
+    border: 1px solid #000;
+    display: inline-block;
+}
+
+.legend-box.contains {
+    background-color: #000; /* Solid black for high contrast print */
+    color: white;
+}
+
+.legend-box.may-contain {
+    background-color: transparent;
+    border: 2px solid #000; /* Outline */
+}
+
+.legend-box.free {
+    /* Checkmark represented by CSS or icon, but let's use simple box logic first */
+    position: relative;
+}
+.legend-box.free::after {
+    content: '✓';
+    position: absolute;
+    top: -4px;
+    left: 2px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.legend-box.unknown {
+    border-style: dashed;
+}
+
+/* Matrix Table for Print */
+.print-matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10pt; /* Readable print size */
+}
+
+.print-matrix-table th,
+.print-matrix-table td {
+    border: 1px solid #ccc;
+    padding: 4px 6px;
+    text-align: center;
+}
+
+.print-matrix-table th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+    /* Sticky header support for long tables in some browsers */
+    position: sticky;
+    top: 0;
+}
+
+/* Vertical Text Headers for Allergens to save space */
+.print-matrix-table th.allergen-header {
+    height: 100px;
+    white-space: nowrap;
+}
+.print-matrix-table th.allergen-header > div {
+    transform: translate(0px, 0px) rotate(-90deg);
+    width: 30px;
+}
+/* Actually, simple icons + abbr might be better for print readability if width permits.
+   Let's stick to standard headers but keep font small. */
+
+.print-matrix-table td.item-name {
+    text-align: left;
+    font-weight: bold;
+    width: 200px;
+}
+
+/* Status Indicators in Cells */
+.print-cell-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    display: inline-block;
+}
+
+.status-indicator.contains {
+    background-color: black;
+    border-radius: 50%; /* Solid Dot */
+}
+
+.status-indicator.may_contain {
+    border: 2px solid black;
+    border-radius: 50%; /* Hollow Circle */
+    background-color: transparent;
+    width: 10px; height: 10px;
+}
+
+.status-indicator.free {
+    /* Tick */
+}
+.status-indicator.free::before {
+    content: '✓';
+    font-weight: bold;
+}
+
+.status-indicator.unknown {
+    content: '-';
+}
+.status-indicator.unknown::before {
+    content: '-';
+}
+
+/* Print Controls (Hide when printing) */
+.print-controls {
+    padding: 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+/* HIDE EVERYTHING ELSE WHEN PRINTING */
+@media print {
+    /* Hide the entire dashboard layout shell except our print container */
+    body > *:not(#mainDashboardContainer) {
+        display: none;
+    }
+
+    /* We have to be careful because #mainDashboardContainer contains the sidebar/header
+       which we also want to hide.
+       Better approach: The print page renders into a specific div.
+       We hide everything, then make that specific div visible and absolute.
+    */
+
+    body * {
+        visibility: hidden;
+    }
+
+    #allergenPrintPage, #allergenPrintPage * {
+        visibility: visible;
+    }
+
+    #allergenPrintPage {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background: white;
+    }
+
+    /* Explicitly hide the controls */
+    .print-controls {
+        display: none !important;
+    }
+
+    /* Hide Page Header (h2) generated by template */
+    .page-header {
+        display: none;
+    }
+
+    /* Ensure landscape if supported */
+    @page {
+        size: A4 landscape;
+        margin: 10mm;
+    }
+
+    /* Reset background colors for ink saving */
+    .print-banner {
+        background-color: white !important;
+        color: red !important;
+        border: 2px solid red;
+    }
+
+    .print-matrix-table th {
+        background-color: white !important;
+        color: black !important;
+        border-bottom: 2px solid black;
+    }
+}

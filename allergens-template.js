@@ -57,16 +57,19 @@ export function createAllergenMatrixForStaff(matrixSnapshot) {
     matrixSnapshot.forEach(item => {
         // Make the row clickable by adding a data-id attribute
         tableHtml += `
-            <tr class="clickable-row" data-item-id="${item.id}">
-                <td>
+            <tr class="clickable-row" data-item-id="${item.id}" tabindex="0" role="button" aria-label="View details for ${item.name}">
+                <td role="rowheader">
                     <div class="item-name-cell">
                         ${item.name}
-                        <i class="fas fa-info-circle info-icon"></i>
+                        <i class="fas fa-info-circle info-icon" aria-hidden="true"></i>
                     </div>
                 </td>
                 ${sortedAllergens.map(allergenId => {
                     const status = item.allergens[allergenId] || 'unknown';
-                    return `<td class="status-${status}">${status.replace(/_/g, ' ')}</td>`;
+                    const allergenName = allergenNameMap[allergenId] || allergenId;
+                    return `<td class="status-${status}" aria-label="${allergenName}: ${status.replace(/_/g, ' ')}">
+                                ${status.replace(/_/g, ' ')}
+                            </td>`;
                 }).join('')}
                 <td>${item.notes || ''}</td>
             </tr>

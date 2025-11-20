@@ -26,9 +26,14 @@ export function createAllergenEditorLayout() {
                 </div>
                  <div class="sidebar-footer">
                     <button id="newMenuItemBtn" class="new-item-btn"><i class="fas fa-plus"></i> New Menu Item</button>
+                    <button id="seedMenuBtn" class="new-item-btn secondary-btn" style="margin-top: 10px; background-color: #6c757d;"><i class="fas fa-seedling"></i> Seed Menu</button>
                 </div>
             </div>
             <div class="allergen-editor-main">
+                <div class="editor-header-links" style="padding: 10px; text-align: right;">
+                     <a href="README_Allergens.md" target="_blank" class="help-link"><i class="fas fa-book"></i> Docs</a>
+                     <a href="QA_Allergens.md" target="_blank" class="help-link"><i class="fas fa-tasks"></i> QA Checklist</a>
+                </div>
                 <div id="editorWelcome" class="editor-welcome">
                     <h2>Welcome to the Allergen Editor</h2>
                     <p>Select a menu item from the list on the left to begin editing.</p>

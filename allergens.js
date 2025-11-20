@@ -1,12 +1,13 @@
 // --- allergens.js ---
 // Manages the rendering and logic for all allergen-related pages.
-import { db } from './firebase.js';
+import { db, auth } from './firebase.js';
 import { getCurrentUser } from './user.js';
 import { showToast } from './ui.js';
 import { createPageHtml, createAllergenMatrixForStaff } from './templates/allergens-template.js';
 import { createAllergenEditorLayout, createAllergenGrid, createNotesSection } from './templates/allergens-editor-template.js';
 import { FSA_ALLERGENS, ALLERGEN_STATUS } from './constants.js';
 import { locations } from './config.js';
+import { seedMenuItems } from './seed-menu-items.js';
 
 
 // --- Page Rendering Functions ---
@@ -125,7 +126,7 @@ function openItemDetailsModal(item) {
     });
 }
 
-function openIncidentLogModal(itemContext = null) {
+export function openIncidentLogModal(itemContext = null) {
     const currentUser = getCurrentUser();
     if (!currentUser) {
         showToast("You must be logged in to log an incident.", "error");
@@ -137,7 +138,7 @@ function openIncidentLogModal(itemContext = null) {
     const modalBody = `
         <form id="incidentForm" class="incident-form">
             <div class="form-group">
-                <label>Store Location</label>
+                <label>Store Location <span class="required">*</span></label>
                 <select id="incidentStore" class="modal-input" required>
                     <option value="">Select Store...</option>
                     ${locations.map(loc => `<option value="${loc.id}">${loc.name}</option>`).join('')}
@@ -164,13 +165,13 @@ function openIncidentLogModal(itemContext = null) {
             </div>
 
             <div class="form-group">
-                <label>Action Taken</label>
+                <label>Action Taken <span class="required">*</span></label>
                 <input type="text" id="incidentAction" class="modal-input" required
                     placeholder="e.g., Checked matrix, advised customer...">
             </div>
 
             <div class="form-group">
-                <label>Outcome</label>
+                <label>Outcome <span class="required">*</span></label>
                 <select id="incidentOutcome" class="modal-input" required>
                     <option value="served_safely">Served Safely</option>
                     <option value="refused">Refused Service (Safety)</option>
@@ -242,34 +243,42 @@ function openIncidentLogModal(itemContext = null) {
 export async function renderAllergyIncidentsPage() {
     const pageContainer = document.getElementById('allergenIncidentsPage');
 
+    // Determine default date range (last 30 days)
+    const endDateDefault = new Date().toISOString().split('T')[0];
+    const startDateDefault = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
     const headerHtml = `
         <div class="incidents-toolbar">
-            <div class="filter-group">
-                <label>Status:</label>
-                <select id="filterOutcome">
-                    <option value="">All Outcomes</option>
-                    <option value="served_safely">Served Safely</option>
-                    <option value="refused">Refused</option>
-                    <option value="escalated">Escalated</option>
-                </select>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>Start Date:</label>
+                    <input type="date" id="filterStartDate" value="${startDateDefault}">
+                </div>
+                <div class="filter-group">
+                    <label>End Date:</label>
+                    <input type="date" id="filterEndDate" value="${endDateDefault}">
+                </div>
+                <div class="filter-group">
+                    <label>Status:</label>
+                    <select id="filterOutcome">
+                        <option value="">All Outcomes</option>
+                        <option value="served_safely">Served Safely</option>
+                        <option value="refused">Refused</option>
+                        <option value="escalated">Escalated</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Store:</label>
+                    <select id="filterStore">
+                        <option value="">All Stores</option>
+                        ${locations.map(loc => `<option value="${loc.id}">${loc.name}</option>`).join('')}
+                    </select>
+                </div>
             </div>
-            <div class="filter-group">
-                <label>Store:</label>
-                <select id="filterStore">
-                    <option value="">All Stores</option>
-                    ${locations.map(loc => `<option value="${loc.id}">${loc.name}</option>`).join('')}
-                </select>
+            <div class="action-row" style="margin-top: 1rem;">
+                <button id="refreshIncidentsBtn" class="button"><i class="fas fa-sync"></i> Refresh</button>
+                <button id="exportIncidentsBtn" class="button"><i class="fas fa-file-csv"></i> Export CSV</button>
             </div>
-             <div class="filter-group">
-                 <label>Date Limit:</label>
-                 <select id="filterLimit">
-                    <option value="30">Last 30 Entries</option>
-                    <option value="100">Last 100 Entries</option>
-                    <option value="500">Last 500 Entries</option>
-                 </select>
-            </div>
-            <button id="refreshIncidentsBtn" class="button"><i class="fas fa-sync"></i> Refresh</button>
-            <button id="exportIncidentsBtn" class="button"><i class="fas fa-file-csv"></i> Export CSV</button>
         </div>
         <div id="incidentsTableContainer">
             <p>Loading incidents...</p>
@@ -280,9 +289,11 @@ export async function renderAllergyIncidentsPage() {
 
     document.getElementById('refreshIncidentsBtn').addEventListener('click', fetchAndRenderIncidents);
     document.getElementById('exportIncidentsBtn').addEventListener('click', exportIncidentsToCsv);
-    document.getElementById('filterOutcome').addEventListener('change', fetchAndRenderIncidents);
-    document.getElementById('filterStore').addEventListener('change', fetchAndRenderIncidents);
-    document.getElementById('filterLimit').addEventListener('change', fetchAndRenderIncidents);
+
+    // No auto-fetch on change to avoid spamming if user changes multiple filters
+    // document.getElementById('filterOutcome').addEventListener('change', fetchAndRenderIncidents);
+    // document.getElementById('filterStore').addEventListener('change', fetchAndRenderIncidents);
+    // document.getElementById('filterStartDate').addEventListener('change', fetchAndRenderIncidents);
 
     await fetchAndRenderIncidents();
 }
@@ -293,7 +304,8 @@ async function fetchAndRenderIncidents() {
     const container = document.getElementById('incidentsTableContainer');
     const outcomeFilter = document.getElementById('filterOutcome').value;
     const storeFilter = document.getElementById('filterStore').value;
-    const limit = parseInt(document.getElementById('filterLimit').value);
+    const startDateVal = document.getElementById('filterStartDate').value;
+    const endDateVal = document.getElementById('filterEndDate').value;
 
     container.innerHTML = '<div class="loading-spinner">Loading...</div>';
 
@@ -307,7 +319,27 @@ async function fetchAndRenderIncidents() {
             query = query.where('store', '==', storeFilter);
         }
 
-        query = query.limit(limit);
+        // Date filtering
+        // Note: Firestore equality filters (outcome, store) must come before range filters (createdAt)
+        // if we use a composite index. If not, we might need client-side filtering for some.
+        // However, 'createdAt' is the orderBy field.
+        // Firestore requires range filter to be on the same field as orderBy.
+        // Since we order by createdAt, we can filter by createdAt.
+
+        if (startDateVal) {
+             const startDate = new Date(startDateVal);
+             query = query.where('createdAt', '>=', startDate);
+        }
+
+        if (endDateVal) {
+            const endDate = new Date(endDateVal);
+            // Add one day to include the end date fully
+            endDate.setDate(endDate.getDate() + 1);
+            query = query.where('createdAt', '<', endDate);
+        }
+
+        // Limit safety
+        query = query.limit(500);
 
         const snapshot = await query.get();
         currentIncidents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -404,8 +436,121 @@ export async function renderAllergenTrainingPage() {
 }
 
 export async function renderAllergenPrintPage() {
-    const content = '<h2>Print Allergens</h2><p>Printable versions of the allergen matrix.</p>';
-    document.getElementById('allergenPrintPage').innerHTML = createPageHtml('Print Allergens', content);
+    const pageContainer = document.getElementById('allergenPrintPage');
+
+    // Render Loading State
+    pageContainer.innerHTML = '<div class="loading-spinner">Generating print view...</div>';
+
+    try {
+        // Fetch latest published version
+        const versionsSnapshot = await db.collection('allergenVersions')
+            .orderBy('publishedAt', 'desc')
+            .limit(1)
+            .get();
+
+        if (versionsSnapshot.empty) {
+            pageContainer.innerHTML = '<p class="error-message">No published version available to print.</p>';
+            return;
+        }
+
+        const versionData = versionsSnapshot.docs[0].data();
+        const items = versionData.matrixSnapshot || [];
+        const publishedAt = versionData.publishedAt ? new Date(versionData.publishedAt.seconds * 1000).toLocaleString() : 'N/A';
+
+        // Generate QR Code URL (pointing to the matrix page)
+        // Assumes the app is hosted at the current origin
+        const matrixUrl = `${window.location.origin}?page=allergen-matrix`;
+
+        const printHtml = `
+            <div class="print-controls">
+                <button class="button" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+                <button class="button" onclick="window.print()"><i class="fas fa-file-pdf"></i> Download PDF</button>
+            </div>
+
+            <div class="print-page-container">
+                <header class="print-header">
+                    <div class="print-header-left">
+                        <h1 class="print-title">Friez n Burgz | Allergen Matrix</h1>
+                        <div class="print-meta">
+                            Version: ${versionData.title} <br>
+                            Published: ${publishedAt}
+                        </div>
+                    </div>
+                    <div class="print-header-right">
+                         <div class="qr-container">
+                            <canvas id="qrCodeCanvas"></canvas>
+                            <span>Scan for live updates</span>
+                         </div>
+                    </div>
+                </header>
+
+                <div class="print-banner">
+                    PLEASE ASK ABOUT ALLERGEN INFORMATION FOR SPECIALS
+                </div>
+
+                <div class="print-legend">
+                    <div class="legend-item">
+                        <span class="legend-box contains"></span>
+                        <span>Contains</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-box may-contain"></span>
+                        <span>May Contain</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-box free"></span>
+                        <span>Free</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-box unknown"></span>
+                        <span>Unknown</span>
+                    </div>
+                </div>
+
+                <table class="print-matrix-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            ${FSA_ALLERGENS.map(a => `<th class="allergen-header"><div>${a.name}</div></th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${items.map(item => `
+                            <tr>
+                                <td class="item-name">${item.name}</td>
+                                ${FSA_ALLERGENS.map(a => {
+                                    const status = item.allergens[a.id] || 'unknown';
+                                    return `<td><span class="status-indicator ${status}"></span></td>`;
+                                }).join('')}
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+
+                 <footer class="print-footer" style="margin-top: 20px; font-size: 10px; text-align: center; color: #777;">
+                    Generated on ${new Date().toLocaleString()} | Use the QR code to verify the latest information.
+                </footer>
+            </div>
+        `;
+
+        pageContainer.innerHTML = printHtml;
+
+        // Generate QR Code
+        if (window.QRious) {
+            new QRious({
+                element: document.getElementById('qrCodeCanvas'),
+                value: matrixUrl,
+                size: 80
+            });
+        } else {
+            console.warn("QRious library not loaded. QR code generation skipped.");
+            document.getElementById('qrCodeCanvas').style.display = 'none';
+        }
+
+    } catch (error) {
+        console.error("Error rendering print page:", error);
+        pageContainer.innerHTML = `<p class="error-message">Error loading print view: ${error.message}</p>`;
+    }
 }
 
 // --- Admin-Only Page Rendering Functions ---
@@ -432,6 +577,10 @@ export async function renderAllergenEditorPage() {
 
     // Add event listener for the "New Menu Item" button
     document.getElementById('newMenuItemBtn').addEventListener('click', handleNewMenuItem);
+    document.getElementById('seedMenuBtn').addEventListener('click', async () => {
+        await seedMenuItems();
+        await fetchAndRenderMenuItems();
+    });
 }
 
 async function fetchAndRenderMenuItems() {

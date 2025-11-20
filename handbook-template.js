@@ -96,11 +96,15 @@ export function renderMatrixTable(items, allergens) {
             </thead>
             <tbody>
                 ${items.map(item => `
-                    <tr data-item-id="${item.id}" tabindex="0">
-                        <td>${item.name}</td>
+                    <tr data-item-id="${item.id}" tabindex="0" aria-label="${item.name}, Category: ${item.category}">
+                        <td role="rowheader">${item.name}</td>
                         ${allergens.map(allergenId => {
                             const status = item.allergens[allergenId] || 'unknown';
-                             return `<td class="status-cell" data-status="${status}"><span class="badge status-${status}"></span></td>`;
+                            const statusText = status.replace('_', ' ');
+                            const allergenName = allergenNameMap[allergenId];
+                             return `<td class="status-cell" data-status="${status}">
+                                        <span class="badge status-${status}" role="img" aria-label="${allergenName}: ${statusText}"></span>
+                                     </td>`;
                         }).join('')}
                         <td class="notes-cell">${item.notes || ''}</td>
                     </tr>
@@ -177,6 +181,11 @@ export function renderItemDrawer(item) {
                     <p>"The <strong>${item.name}</strong> contains <strong>${containsAllergens}</strong>. It may also contain traces of <strong>${mayContainAllergens}</strong>. We can suggest the following substitutions: [read suggestions]."</p>
                 </div>
             </div>
+
+            <hr>
+            <button id="logItemInteractionBtn" class="button full-width">
+                <i class="fas fa-exclamation-circle"></i> Log Allergy Interaction for this Item
+            </button>
         </div>
     `;
 }
