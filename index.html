@@ -1,154 +1,145 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-</head>
+<h2 class="auth-title">Employee Login</h2>
+<input type="email" id="loginEmail" placeholder="Email" class="auth-input">
+<input type="password" id="loginPassword" placeholder="Password" class="auth-input">
+<button id="loginBtn" class="auth-button email-login-btn">Login with Email</button>
+<div class="divider">OR</div>
+<button id="googleLoginBtn" class="auth-button google-login-btn">
+    <i class="fab fa-google"></i> Sign in with Google
+</button>
+<p id="authMessage" class="auth-message"></p>
+</div>
+</div>
 
-<body>
-    <!-- 1. Authentication Container (Login/Signup) -->
-    <div class="auth-container" id="authContainer">
-        <div class="auth-card">
-            <img src="assets/logo-alt.png" alt="Friez n Burgz Logo" class="auth-logo">
-            <h2 class="auth-title">Employee Login</h2>
-            <input type="email" id="loginEmail" placeholder="Email" class="auth-input">
-            <input type="password" id="loginPassword" placeholder="Password" class="auth-input">
-            <button id="loginBtn" class="auth-button email-login-btn">Login with Email</button>
-            <div class="divider">OR</div>
-            <button id="googleLoginBtn" class="auth-button google-login-btn">
-                <i class="fab fa-google"></i> Sign in with Google
-            </button>
-            <p id="authMessage" class="auth-message"></p>
+<!-- 2. Location Selection Container (Shown after login, before main app) -->
+<div class="location-selection-container" id="locationSelectionContainer">
+    <div class="location-selection-card">
+        <img src="assets/logo-alt.png" alt="Friez n Burgz Logo" class="auth-logo">
+        <h2 class="auth-title">Select Your Location</h2>
+        <div class="select-wrapper">
+            <select id="locationSelect" class="location-select"></select>
+            <i class="fas fa-chevron-down select-arrow"></i>
         </div>
+        <button id="confirmLocationBtn" class="auth-button">Confirm Location</button>
+        <p id="locationMessage" class="auth-message"></p>
     </div>
+</div>
 
-    <!-- 2. Location Selection Container (Shown after login, before main app) -->
-    <div class="location-selection-container" id="locationSelectionContainer">
-        <div class="location-selection-card">
-            <img src="assets/logo-alt.png" alt="Friez n Burgz Logo" class="auth-logo">
-            <h2 class="auth-title">Select Your Location</h2>
-            <div class="select-wrapper">
-                <select id="locationSelect" class="location-select"></select>
-                <i class="fas fa-chevron-down select-arrow"></i>
-            </div>
-            <button id="confirmLocationBtn" class="auth-button">Confirm Location</button>
-            <p id="locationMessage" class="auth-message"></p>
+<!-- 3. Main Admin Dashboard Container (Shown after location selection) -->
+<div class="main-dashboard-container" id="mainDashboardContainer">
+    <header class="dashboard-header">
+        <div class="header-left">
+            <img src="assets/logo.png" alt="Friez n Burgz Logo" class="header-logo">
+            <span class="app-name">Admin Dashboard</span>
         </div>
-    </div>
-
-    <!-- 3. Main Admin Dashboard Container (Shown after location selection) -->
-    <div class="main-dashboard-container" id="mainDashboardContainer">
-        <header class="dashboard-header">
-            <div class="header-left">
-                <img src="assets/logo.png" alt="Friez n Burgz Logo" class="header-logo">
-                <span class="app-name">Admin Dashboard</span>
-            </div>
-            <div class="header-center">
-                <span id="currentLocationDisplay" class="current-location-display">Location: Not Selected</span>
-            </div>
-            <div class="header-right">
-                <button id="changeLocationBtn" class="header-button">Change Location</button>
-                <button id="logoutBtn" class="header-button">Logout</button>
-            </div>
-        </header>
-        </a>
-        <a href="#" class="nav-item" data-page="allergen-procedures">
-            <i class="fas fa-book-open"></i> Procedures
-        </a>
-        <a href="#" class="nav-item" data-page="allergen-training">
-            <i class="fas fa-graduation-cap"></i> Training
-        </a>
-        <a href="#" class="nav-item" data-page="allergen-print">
-            <i class="fas fa-print"></i> Print
-            <i class="fas fa-exclamation-triangle"></i> Incidents
-        </a>
-    </div>
-
-    <a href="#" class="nav-item" data-page="settings">
-        <i class="fas fa-cog"></i> Settings
+        <div class="header-center">
+            <span id="currentLocationDisplay" class="current-location-display">Location: Not Selected</span>
+        </div>
+        <div class="header-right">
+            <button id="changeLocationBtn" class="header-button">Change Location</button>
+            <button id="logoutBtn" class="header-button">Logout</button>
+        </div>
+    </header>
     </a>
-    </nav>
-    </aside>
+    <a href="#" class="nav-item" data-page="allergen-procedures">
+        <i class="fas fa-book-open"></i> Procedures
+    </a>
+    <a href="#" class="nav-item" data-page="allergen-training">
+        <i class="fas fa-graduation-cap"></i> Training
+    </a>
+    <a href="#" class="nav-item" data-page="allergen-print">
+        <i class="fas fa-print"></i> Print
+        <i class="fas fa-exclamation-triangle"></i> Incidents
+    </a>
+</div>
 
-    <main class="dashboard-content" id="dashboardContent">
-        <!-- Content will be dynamically loaded here by other modules -->
-        <section id="dashboardPage" class="content-page active-page">
-            <!-- Dynamic content for dashboard overview will go here -->
-        </section>
+<a href="#" class="nav-item" data-page="settings">
+    <i class="fas fa-cog"></i> Settings
+</a>
+</nav>
+</aside>
 
-        <section id="stockManagementPage" class="content-page">
-            <!-- IMPORTANT: This div is where stock.js will inject its content -->
-            <div id="stockManagementContent"></div>
-        </section>
+<main class="dashboard-content" id="dashboardContent">
+    <!-- Content will be dynamically loaded here by other modules -->
+    <section id="dashboardPage" class="content-page active-page">
+        <!-- Dynamic content for dashboard overview will go here -->
+    </section>
 
-        <!-- NEW: Staff Page Section Added -->
-        <section id="staffPage" class="content-page">
-            <!-- IMPORTANT: This div is where staff.js will inject its content -->
-            <div id="staffContent"></div>
-        </section>
+    <section id="stockManagementPage" class="content-page">
+        <!-- IMPORTANT: This div is where stock.js will inject its content -->
+        <div id="stockManagementContent"></div>
+    </section>
 
-        <section id="rotaPage" class="content-page">
-            <div id="rotaContent"></div>
-        </section>
+    <!-- NEW: Staff Page Section Added -->
+    <section id="staffPage" class="content-page">
+        <!-- IMPORTANT: This div is where staff.js will inject its content -->
+        <div id="staffContent"></div>
+    </section>
 
-        <section id="wastageLogPage" class="content-page">
-            <!-- IMPORTANT: This div is where wastage.js will inject its content -->
-            <div id="wastageLogContent"></div>
-        </section>
+    <section id="rotaPage" class="content-page">
+        <div id="rotaContent"></div>
+    </section>
 
-        <!-- NEW LOYALTY MANAGEMENT PAGE -->
-        <section id="loyaltyManagementPage" class="content-page">
-            <div id="loyaltyManagementContent">
-                <!-- Content will be injected by loyaltyManagement.js -->
-            </div>
-        </section>
+    <section id="wastageLogPage" class="content-page">
+        <!-- IMPORTANT: This div is where wastage.js will inject its content -->
+        <div id="wastageLogContent"></div>
+    </section>
 
-        <section id="ordersPage" class="content-page">
-            <!-- IMPORTANT: This div is where orders.js will inject its content -->
-            <div id="ordersContent"></div>
-        </section>
+    <!-- NEW LOYALTY MANAGEMENT PAGE -->
+    <section id="loyaltyManagementPage" class="content-page">
+        <div id="loyaltyManagementContent">
+            <!-- Content will be injected by loyaltyManagement.js -->
+        </div>
+    </section>
 
-        <section id="suppliersPage" class="content-page">
-            <!-- IMPORTANT: This div is where suppliers.js will inject its content -->
-            <div id="suppliersContent"></div>
-        </section>
+    <section id="ordersPage" class="content-page">
+        <!-- IMPORTANT: This div is where orders.js will inject its content -->
+        <div id="ordersContent"></div>
+    </section>
 
-        <section id="settingsPage" class="content-page">
-            <h2 class="page-title">Settings</h2>
-            <p>App settings and user management.</p>
-        </section>
+    <section id="suppliersPage" class="content-page">
+        <!-- IMPORTANT: This div is where suppliers.js will inject its content -->
+        <div id="suppliersContent"></div>
+    </section>
 
-        <!-- Allergen Handbook Pages -->
-        <section id="allergenMatrixPage" class="content-page"></section>
-        <section id="allergenProceduresPage" class="content-page"></section>
-        <section id="allergenTrainingPage" class="content-page"></section>
-        <section id="allergenPrintPage" class="content-page"></section>
+    <section id="settingsPage" class="content-page">
+        <h2 class="page-title">Settings</h2>
+        <p>App settings and user management.</p>
+    </section>
 
-        <!-- Allergen Admin Pages -->
-        <section id="allergenEditorPage" class="content-page"></section>
-        <section id="allergenVersionsPage" class="content-page"></section>
-        <section id="allergenImportPage" class="content-page"></section>
-        <section id="allergenIncidentsPage" class="content-page"></section>
+    <!-- Allergen Handbook Pages -->
+    <section id="allergenMatrixPage" class="content-page"></section>
+    <section id="allergenProceduresPage" class="content-page"></section>
+    <section id="allergenTrainingPage" class="content-page"></section>
+    <section id="allergenPrintPage" class="content-page"></section>
 
-    </main>
-    </div>
+    <!-- Allergen Admin Pages -->
+    <section id="allergenEditorPage" class="content-page"></section>
+    <section id="allergenVersionsPage" class="content-page"></section>
+    <section id="allergenImportPage" class="content-page"></section>
+    <section id="allergenIncidentsPage" class="content-page"></section>
 
-    <!-- 4. Universal Modal Structure -->
-    <div id="universalModal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-button">×</span>
-            <h3 id="modalTitle" class="modal-title"></h3>
-            <div id="modalBody" class="modal-body">
-                <!-- Dynamic content will be injected here -->
-            </div>
-            <p id="modalMessage" class="modal-message"></p>
-            <div id="modalFooter" class="modal-footer">
-                <!-- Dynamic buttons/actions -->
-            </div>
+</main>
+</div>
+
+<!-- 4. Universal Modal Structure -->
+<div id="universalModal" class="modal-overlay">
+    <div class="modal-content">
+        <span class="close-button">×</span>
+        <h3 id="modalTitle" class="modal-title"></h3>
+        <div id="modalBody" class="modal-body">
+            <!-- Dynamic content will be injected here -->
+        </div>
+        <p id="modalMessage" class="modal-message"></p>
+        <div id="modalFooter" class="modal-footer">
+            <!-- Dynamic buttons/actions -->
         </div>
     </div>
+</div>
 
-    <!-- Main JavaScript file - acts as the orchestrator -->
-    <script type="module" src="main.js"></script>
-    <script src="import-data.js"></script>
-    <script type="module" src="import-menu-items.js"></script>
+<!-- Main JavaScript file - acts as the orchestrator -->
+<script type="module" src="main.js"></script>
+<script src="import-data.js"></script>
+<script type="module" src="import-menu-items.js"></script>
 </body>
 
 </html>
