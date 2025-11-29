@@ -19,6 +19,16 @@ import { initLocationSelection, showLocationSelection, hideLocationSelection, up
 import { showPage, hideAllPages, initSidebarNav, showDashboardContainer, hideDashboardContainer, updateNavVisibility } from './ui.js';
 
 // Import specific page rendering functions
+import {
+    renderAllergenPrintPage,
+    renderAllergenEditorPage,
+    renderAllergenVersionsPage,
+    renderAllergenImportPage,
+    renderAllergyIncidentsPage
+} from './allergens.js';
+import { renderStaffAllergenMatrixPage } from './handbook.js';
+import { renderProceduresPage } from './handbook/allergens/procedures.js';
+import { renderTrainingPage } from './handbook/allergens/training.js';
 import { renderStockManagementPage, getAllUniqueStockItems } from './stock.js';
 import { renderWastageLogPage } from './wastage.js';
 import { renderDashboardOverviewPage, showQuickAdjustmentModal, openModal, closeModal } from './dashboard.js';
@@ -26,7 +36,8 @@ import { renderSuppliersPage } from './suppliers.js';
 import { renderOrdersPage } from './orders.js';
 import { renderStaffPage } from './staff.js';
 import { renderSettingsPage } from './settings.js';
-import { renderRecruitmentPage } from './recruitment.js';
+// import { renderLoyaltyManagementPage } from './loyaltyManagement.js';
+import { renderRotaPage } from './rota.js';
 
 // --- DOM Elements (centralized for main.js's direct use) ---
 const logoutBtn = document.getElementById('logoutBtn');
@@ -189,6 +200,13 @@ async function renderPageContent(pageId) {
         case 'staff':
             await renderStaffPage();
             break;
+        case 'rota':
+            await renderRotaPage();
+            break;
+        case 'loyalty-management':
+            // await renderLoyaltyManagementPage();
+            console.warn('Loyalty module not loaded');
+            break;
         case 'wastage-log':
             await renderWastageLogPage();
             break;
@@ -201,8 +219,33 @@ async function renderPageContent(pageId) {
         case 'settings':
             await renderSettingsPage();
             break;
-        case 'recruitment':
-            await renderRecruitmentPage();
+
+        // Allergen Handbook Pages
+        case 'allergen-matrix':
+            await renderStaffAllergenMatrixPage();
+            break;
+        case 'allergen-procedures':
+            await renderProceduresPage();
+            break;
+        case 'allergen-training':
+            await renderTrainingPage();
+            break;
+        case 'allergen-print':
+            await renderAllergenPrintPage();
+            break;
+
+        // Allergen Admin Pages
+        case 'allergen-editor':
+            await renderAllergenEditorPage();
+            break;
+        case 'allergen-versions':
+            await renderAllergenVersionsPage();
+            break;
+        case 'allergen-import':
+            await renderAllergenImportPage();
+            break;
+        case 'allergen-incidents':
+            await renderAllergyIncidentsPage();
             break;
 
         default:
@@ -232,11 +275,16 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // --- Simple Router ---
-// --- Simple Router ---
 function router() {
     const path = window.location.pathname;
     // When served from root, path will include /static/
-    if (path.endsWith('/') || path.endsWith('/index.html')) {
+    if (path.endsWith('/handbook/allergens/procedures.html') || path.endsWith('/handbook/allergens/procedures')) {
+        renderPageContent('allergen-procedures');
+    } else if (path.endsWith('/handbook/allergens/training.html') || path.endsWith('/handbook/allergens/training')) {
+        renderPageContent('allergen-training');
+    } else if (path.includes('handbook')) { // Fallback for other handbook pages
+        renderPageContent('allergen-matrix');
+    } else if (path.endsWith('/') || path.endsWith('/index.html')) {
         // This is the main dashboard, which is handled by the auth state change logic
         // but we can leave a hook here if needed.
     }

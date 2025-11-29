@@ -2,7 +2,7 @@
 
 import { db, auth } from './firebase.js';
 import { getSelectedLocation, getLocationDisplayName } from './config.js';
-import { createDashboardHtml, createCriticalItemHtml } from './templates/dashboard-template.js';
+import { createDashboardCardHtml, createCriticalItemHtml, createRecentWasteItemHtml, createStaffSummaryCardHtml } from './templates/dashboard-template.js';
 import { getCurrentStockItems, getAllUniqueStockItems } from './stock.js';
 import { getSuppliers } from './suppliers.js';
 import { createOrderFormModalBodyHtml, getItemOptionsHtml } from './templates/orders-template.js';
@@ -57,93 +57,132 @@ export async function renderDashboardOverviewPage() {
     }
     const locationName = getLocationDisplayName(selectedLocationId);
 
-    // Render the new dashboard layout
-    dashboardPage.innerHTML = createDashboardHtml(locationName);
+    // Simplified Dashboard Layout
+    dashboardPage.innerHTML = `
+        <h2 class="page-title">Dashboard Overview</h2>
+        <p class="dashboard-welcome">Welcome to Friez n Burgz Admin for <strong>${locationName}</strong></p>
+        
+        <div class="dashboard-summary-grid simple-dashboard">
+            <div id="staffSummaryCard" class="dashboard-card full-width-card">
+                <h3 class="card-title">Staff Training Status</h3>
+                <div id="staffSummaryContent"><p>Loading...</p></div>
+            </div>
 
-    // Attach event listeners for Quick Actions
-    document.getElementById('quickAddStockBtn').addEventListener('click', () => showQuickAdjustmentModal('add'));
-    document.getElementById('quickLogWasteBtn').addEventListener('click', () => showQuickAdjustmentModal('waste'));
-    document.getElementById('quickCreateOrderBtn').addEventListener('click', showCreateOrderModal);
+            <div id="quickNavCard" class="dashboard-card full-width-card">
+                <h3 class="card-title">Quick Navigation</h3>
+                <div class="quick-actions-content">
+                    <button class="auth-button quick-action-btn" onclick="window.mainApp.handleNavigationClick('staff')">
+                        <i class="fas fa-users"></i> Manage Staff
+                    </button>
+                    <button class="auth-button quick-action-btn" onclick="window.mainApp.handleNavigationClick('rota')">
+                        <i class="fas fa-calendar-alt"></i> View Rota
+                    </button>
+                    <button class="auth-button quick-action-btn" onclick="window.mainApp.handleNavigationClick('loyalty-management')">
+                        <i class="fas fa-star"></i> Loyalty Program
+                    </button>
+                    <button class="auth-button quick-action-btn" onclick="window.mainApp.handleNavigationClick('allergen-matrix')">
+                        <i class="fas fa-book-open"></i> Handbook
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
 
-    // Fetch and Render Data
-    await Promise.all([
-        updateStockStatus(selectedLocationId),
-        updateWastageStatus(selectedLocationId),
-        updateOrdersStatus(selectedLocationId),
-        renderCriticalStockList(selectedLocationId)
-    ]);
+    // Only render staff summary, skip stock/wastage
+    await renderStaffSummary();
 }
 
-async function updateStockStatus(locationId) {
-    const el = document.getElementById('stockStatusValue');
+async function renderStockSummary() {
+    const stockSummary = document.getElementById('stockSummary');
+    const criticalStockList = document.getElementById('criticalStockList');
+    const selectedLocationId = getSelectedLocation();
     try {
-        const itemsRef = db.collection('locations').doc(locationId).collection('items');
-        const snapshot = await itemsRef.get();
-        const items = snapshot.docs.map(doc => doc.data());
-        const criticalCount = items.filter(i => i.currentStock <= i.reorderPoint / 2).length;
+        const itemsRef = db.collection('locations').doc(selectedLocationId).collection('items');
+        const querySnapshot = await itemsRef.orderBy('category').orderBy('name').get();
+        const allItems = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        if (criticalCount > 0) {
-            el.innerHTML = `<span style="color: var(--red); font-weight: bold;">${criticalCount} Critical Items</span>`;
-        } else {
-            el.innerHTML = `<span style="color: var(--success-green);">All Good</span>`;
-        }
-    } catch (e) {
-        console.error(e);
-        el.textContent = 'Error';
+        const criticalItems = allItems.filter(item => item.currentStock <= item.reorderPoint / 2);
+        const lowItems = allItems.filter(item => item.currentStock > item.reorderPoint / 2 && item.currentStock <= item.reorderPoint);
+        const goodItems = allItems.filter(item => item.currentStock > item.reorderPoint);
+
+        stockSummary.innerHTML = `<div class="summary-top-row">${createDashboardCardHtml('good', goodItems.length, 'Good Stock')}${createDashboardCardHtml('low', lowItems.length, 'Low Stock')}</div><div class="summary-bottom-row">${createDashboardCardHtml('critical', criticalItems.length, 'Critical Stock')}</div>`;
+        criticalStockList.innerHTML = criticalItems.length > 0 ? criticalItems.sort((a, b) => a.currentStock - b.currentStock).map(createCriticalItemHtml).join('') : '<p>No critical stock alerts. Good job!</p>';
+    } catch (error) {
+        console.error('Error loading stock summary:', error);
+        stockSummary.innerHTML = `<p style="color:red;">Error loading data.</p>`;
+        criticalStockList.innerHTML = `<p style="color:red;">Error loading data.</p>`;
     }
 }
 
-async function updateWastageStatus(locationId) {
-    const el = document.getElementById('wasteStatusValue');
+async function renderWastageSummary() {
+    const recentWastageList = document.getElementById('recentWastageList');
+    const selectedLocationId = getSelectedLocation();
     try {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const snapshot = await db.collection('locations').doc(locationId).collection('wastage_log')
-            .where('timestamp', '>=', firebase.firestore.Timestamp.fromDate(today))
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const wasteQuerySnapshot = await db.collection('locations').doc(selectedLocationId).collection('wastage_log')
+            .where('timestamp', '>=', firebase.firestore.Timestamp.fromDate(sevenDaysAgo))
+            .orderBy('timestamp', 'desc')
+            .limit(3)
             .get();
-
-        const count = snapshot.size;
-        el.textContent = `${count} Items Logged Today`;
-    } catch (e) {
-        console.error(e);
-        el.textContent = 'Error';
-    }
-}
-
-async function updateOrdersStatus(locationId) {
-    const el = document.getElementById('ordersStatusValue');
-    try {
-        const snapshot = await db.collection('locations').doc(locationId).collection('orders')
-            .where('status', '==', 'Pending')
-            .get();
-
-        const count = snapshot.size;
-        el.textContent = `${count} Pending Orders`;
-    } catch (e) {
-        console.error(e);
-        el.textContent = 'Error';
-    }
-}
-
-async function renderCriticalStockList(locationId) {
-    const container = document.getElementById('criticalStockList');
-    try {
-        const itemsRef = db.collection('locations').doc(locationId).collection('items');
-        const snapshot = await itemsRef.get();
-        const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        const criticalItems = items.filter(i => i.currentStock <= i.reorderPoint / 2);
-
-        if (criticalItems.length === 0) {
-            container.innerHTML = '<p class="empty-state">No critical stock alerts. Great job!</p>';
+        if (wasteQuerySnapshot.empty) {
+            recentWastageList.innerHTML = '<li>No waste logged in the last 7 days.</li>';
         } else {
-            container.innerHTML = criticalItems
-                .sort((a, b) => a.currentStock - b.currentStock)
-                .map(createCriticalItemHtml)
-                .join('');
+            recentWastageList.innerHTML = wasteQuerySnapshot.docs.map(doc => createRecentWasteItemHtml(doc.data())).join('');
+            recentWastageList.insertAdjacentHTML('beforeend', `<li class="view-all-link"><button class="auth-button quick-action-btn small-btn" id="viewAllWastageBtn">View All Wastage</button></li>`);
+            document.getElementById('viewAllWastageBtn').addEventListener('click', () => {
+                if (window.mainApp) window.mainApp.handleNavigationClick('wastage-log');
+            });
         }
-    } catch (e) {
-        console.error(e);
-        container.innerHTML = '<p style="color:red;">Error loading alerts.</p>';
+    } catch (error) {
+        console.error('Error loading wastage summary:', error);
+        recentWastageList.innerHTML = '<li>Error loading log.</li>';
+    }
+}
+
+async function renderStaffSummary() {
+    const staffSummaryContent = document.getElementById('staffSummaryContent');
+    const TOTAL_HANDBOOK_SECTIONS = 12;
+    try {
+        const [staffSnapshot, usersSnapshot] = await Promise.all([
+            db.collection('staff').get(),
+            db.collection('users').get()
+        ]);
+        const staffData = staffSnapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
+        const progressData = {};
+        usersSnapshot.forEach(doc => { progressData[doc.id] = doc.data(); });
+        const totalEmployees = staffData.length;
+        let upToDateCount = 0;
+        const locationScores = {};
+        staffData.forEach(staff => {
+            const userProgress = progressData[staff.uid] || { readSections: [], quizHistory: [] };
+            const location = staff.locationId || 'Unassigned';
+            if (userProgress.readSections && userProgress.readSections.length >= TOTAL_HANDBOOK_SECTIONS) {
+                upToDateCount++;
+            }
+            if (!locationScores[location]) {
+                locationScores[location] = { totalScore: 0, quizCount: 0 };
+            }
+            if (userProgress.quizHistory && userProgress.quizHistory.length > 0) {
+                userProgress.quizHistory.forEach(quiz => {
+                    locationScores[location].totalScore += (quiz.score / quiz.total);
+                    locationScores[location].quizCount++;
+                });
+            }
+        });
+        const locationAverages = Object.keys(locationScores).map(locId => {
+            const data = locationScores[locId];
+            const average = data.quizCount > 0 ? (data.totalScore / data.quizCount) * 100 : 0;
+            return { name: getLocationDisplayName(locId), score: Math.round(average) };
+        });
+        staffSummaryContent.innerHTML = createStaffSummaryCardHtml({
+            totalEmployees,
+            upToDateCount,
+            locationAverages
+        });
+    } catch (error) {
+        console.error("Error rendering staff summary:", error);
+        staffSummaryContent.innerHTML = `<p style="color:red;">Error loading staff data.</p>`;
     }
 }
 

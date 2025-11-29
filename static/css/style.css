@@ -3872,3 +3872,30 @@ body {
         margin-bottom: 2px;
     }
 }
+/* --- Simplified Dashboard Styles --- */
+.simple-dashboard {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.full-width-card {
+    grid-column: 1 / -1;
+    background: var(--card-bg, #fff);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.dashboard-welcome {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    color: var(--text-color, #333);
+}
+
+@media (min-width: 768px) {
+    .simple-dashboard {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
