@@ -1,7 +1,7 @@
 // --- suppliers-template.js ---
 // Provides HTML templating for supplier page components.
 
-import { itemCategoryIcons } from './config.js'; // NEW: Import icon mappings
+import { itemCategoryIcons } from '../config.js'; // NEW: Import icon mappings
 
 /**
  * Generates the HTML for a single supplier card/list item.
