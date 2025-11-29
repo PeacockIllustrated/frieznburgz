@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // --- Simple Router ---
 function router() {
     const path = window.location.pathname;
-    // When served from root, path will include /public/
+    // When served from root, path will include /static/
     if (path.endsWith('/handbook/allergens/procedures.html') || path.endsWith('/handbook/allergens/procedures')) {
         renderPageContent('allergen-procedures');
     } else if (path.endsWith('/handbook/allergens/training.html') || path.endsWith('/handbook/allergens/training')) {
