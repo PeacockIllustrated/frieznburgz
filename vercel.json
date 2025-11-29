@@ -1,10 +1,10 @@
 {
     "rewrites": [
         {
-            "source": "/(.*)",
+            "source": "/((?!assets/|static/|.*\\.(?:js|css|png|jpg|jpeg|gif|ico|svg|json|html)).*)",
             "destination": "/index.html"
         }
     ],
-    "cleanUrls": true,
+    "cleanUrls": false,
     "outputDirectory": "."
 }
