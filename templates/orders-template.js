@@ -1,7 +1,7 @@
 // --- orders-template.js ---
 // Provides HTML templating for the Orders page components.
 
-import { itemCategoryIcons } from './config.js'; // Import icon mappings for supplier icons
+import { itemCategoryIcons } from '../config.js'; // Import icon mappings for supplier icons
 
 /**
  * Generates the HTML for a single order card/summary item.
