@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Friez n Burgz | Admin Dashboard</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="static/allergen-editor.css">
-    <link rel="stylesheet" href="static/allergen-incidents.css">
-    <link rel="stylesheet" href="static/allergen-print.css">
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@800;900&family=Futura:wght@400&family=Montserrat:wght@800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="static/css/allergen-editor.css">
+    <link rel="stylesheet" href="static/css/allergen-incidents.css">
+    <link rel="stylesheet" href="static/css/allergen-print.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:wght@800;900&family=Futura:wght@400&family=Montserrat:wght@800&display=swap"
+        rel="stylesheet">
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Firebase SDKs - Compat versions for easier integration with older patterns -->
@@ -21,6 +24,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 </head>
+
 <body>
     <!-- 1. Authentication Container (Login/Signup) -->
     <div class="auth-container" id="authContainer">
@@ -48,165 +52,13 @@
                 <i class="fas fa-chevron-down select-arrow"></i>
             </div>
             <button id="confirmLocationBtn" class="auth-button">Confirm Location</button>
-            <p id="locationMessage" class="auth-message"></p>
+            <button id="logoutBtn" class="header-button">Logout</button>
         </div>
-    </div>
-
-    <!-- 3. Main Admin Dashboard Container (Shown after location selection) -->
-    <div class="main-dashboard-container" id="mainDashboardContainer">
-        <header class="dashboard-header">
-            <div class="header-left">
-                <img src="assets/logo.png" alt="Friez n Burgz Logo" class="header-logo">
-                <span class="app-name">Admin Dashboard</span>
-            </div>
-            <div class="header-center">
-                <span id="currentLocationDisplay" class="current-location-display">Location: Not Selected</span>
-            </div>
-            <div class="header-right">
-                <button id="changeLocationBtn" class="header-button">Change Location</button>
-                <button id="logoutBtn" class="header-button">Logout</button>
-            </div>
         </header>
-
-       <aside class="dashboard-sidebar">
-    <nav class="sidebar-nav">
-        <a href="#" class="nav-item active" data-page="dashboard">
-            <i class="fas fa-chart-line"></i> Dashboard
-        </a>
-        <a href="#" class="nav-item" data-page="stock-management">
-            <i class="fas fa-boxes"></i> Stock Management
-        </a>
-        <a href="#" class="nav-item" data-page="wastage-log">
-            <i class="fas fa-dumpster"></i> Wastage Log
-        </a>
-        <a href="#" class="nav-item" data-page="loyalty-management">
-            <i class="fas fa-star"></i> Loyalty Management
-        </a>
-        <a href="#" class="nav-item" data-page="staff">
-            <i class="fas fa-users"></i> Staff
-        </a>
-        <a href="#" class="nav-item" data-page="rota"><i class="fas fa-calendar-alt"></i> Rota</a>
-        <a href="#" class="nav-item" data-page="orders">
-            <i class="fas fa-shipping-fast"></i> Orders
-        </a>
-        <a href="#" class="nav-item" data-page="suppliers">
-            <i class="fas fa-handshake"></i> Suppliers
-        </a>
-
-        <!-- Handbook Nav Group - Visible to all staff -->
-        <div class="nav-group" id="handbookNavGroup" style="display: none;">
-            <h4 class="nav-group-title">Handbook</h4>
-            <a href="#" class="nav-item" data-page="allergen-matrix">
-                <i class="fas fa-allergies"></i> Allergen Matrix
-            </a>
-            <a href="#" class="nav-item" data-page="allergen-procedures">
-                <i class="fas fa-book-open"></i> Procedures
-            </a>
-            <a href="#" class="nav-item" data-page="allergen-training">
-                <i class="fas fa-graduation-cap"></i> Training
-            </a>
-            <a href="#" class="nav-item" data-page="allergen-print">
-                <i class="fas fa-print"></i> Print
-            </a>
+        <div id="modalFooter" class="modal-footer">
+            <!-- Dynamic buttons/actions -->
         </div>
-
-        <!-- Admin Nav Group - Visible to managers/admins -->
-        <div class="nav-group" id="adminNavGroup" style="display: none;">
-            <h4 class="nav-group-title">Admin</h4>
-            <a href="#" class="nav-item" data-page="allergen-editor">
-                <i class="fas fa-edit"></i> Allergen Editor
-            </a>
-            <a href="#" class="nav-item" data-page="allergen-versions">
-                <i class="fas fa-history"></i> Versions
-            </a>
-            <a href="#" class="nav-item" data-page="allergen-import">
-                <i class="fas fa-file-import"></i> Import
-            </a>
-             <a href="#" class="nav-item" data-page="allergen-incidents">
-                <i class="fas fa-exclamation-triangle"></i> Incidents
-            </a>
-        </div>
-
-        <a href="#" class="nav-item" data-page="settings">
-            <i class="fas fa-cog"></i> Settings
-        </a>
-    </nav>
-</aside>
-
-        <main class="dashboard-content" id="dashboardContent">
-            <!-- Content will be dynamically loaded here by other modules -->
-            <section id="dashboardPage" class="content-page active-page">
-                <!-- Dynamic content for dashboard overview will go here -->
-            </section>
-
-            <section id="stockManagementPage" class="content-page">
-                <!-- IMPORTANT: This div is where stock.js will inject its content -->
-                <div id="stockManagementContent"></div>
-            </section>
-            
-            <!-- NEW: Staff Page Section Added -->
-            <section id="staffPage" class="content-page">
-                <!-- IMPORTANT: This div is where staff.js will inject its content -->
-                <div id="staffContent"></div>
-            </section>
-
-            <section id="rotaPage" class="content-page"><div id="rotaContent"></div></section>
-
-            <section id="wastageLogPage" class="content-page">
-                <!-- IMPORTANT: This div is where wastage.js will inject its content -->
-                <div id="wastageLogContent"></div>
-            </section>
-
-                            <!-- NEW LOYALTY MANAGEMENT PAGE -->
-                <section id="loyaltyManagementPage" class="content-page">
-                    <div id="loyaltyManagementContent">
-                        <!-- Content will be injected by loyaltyManagement.js -->
-                    </div>
-                </section>
-            
-            <section id="ordersPage" class="content-page">
-                <!-- IMPORTANT: This div is where orders.js will inject its content -->
-                <div id="ordersContent"></div>
-            </section>
-
-            <section id="suppliersPage" class="content-page">
-                <!-- IMPORTANT: This div is where suppliers.js will inject its content -->
-                <div id="suppliersContent"></div>
-            </section>
-
-            <section id="settingsPage" class="content-page">
-                <h2 class="page-title">Settings</h2>
-                <p>App settings and user management.</p>
-            </section>
-
-            <!-- Allergen Handbook Pages -->
-            <section id="allergenMatrixPage" class="content-page"></section>
-            <section id="allergenProceduresPage" class="content-page"></section>
-            <section id="allergenTrainingPage" class="content-page"></section>
-            <section id="allergenPrintPage" class="content-page"></section>
-
-            <!-- Allergen Admin Pages -->
-            <section id="allergenEditorPage" class="content-page"></section>
-            <section id="allergenVersionsPage" class="content-page"></section>
-            <section id="allergenImportPage" class="content-page"></section>
-            <section id="allergenIncidentsPage" class="content-page"></section>
-
-        </main>
     </div>
-
-    <!-- 4. Universal Modal Structure -->
-    <div id="universalModal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-button">×</span>
-            <h3 id="modalTitle" class="modal-title"></h3>
-            <div id="modalBody" class="modal-body">
-                <!-- Dynamic content will be injected here -->
-            </div>
-            <p id="modalMessage" class="modal-message"></p>
-            <div id="modalFooter" class="modal-footer">
-                <!-- Dynamic buttons/actions -->
-            </div>
-        </div>
     </div>
 
     <!-- Main JavaScript file - acts as the orchestrator -->
@@ -214,4 +66,5 @@
     <script src="import-data.js"></script>
     <script type="module" src="import-menu-items.js"></script>
 </body>
+
 </html>

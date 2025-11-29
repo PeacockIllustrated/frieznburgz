@@ -1,98 +1,102 @@
-// --- dashboard-template.js (Final, Complete & Corrected Version) ---
-
 /**
- * Generates the HTML for a single dashboard summary card (Good, Low, Critical).
+ * Creates the HTML for the main dashboard overview.
+ * @param {string} locationName - The name of the current location.
+ * @returns {string} HTML string.
  */
-export function createDashboardCardHtml(statusClass, count, title) {
+export function createDashboardHtml(locationName) {
     return `
-        <div class="summary-card ${statusClass}">
-            <div class="summary-circle ${statusClass}">
-                <span class="summary-count">${count}</span>
-            </div>
-            <p class="summary-title">${title}</p>
+        <div class="dashboard-header-section">
+            <h2 class="page-title">Dashboard Overview</h2>
+            <p class="welcome-text">Welcome back! Here's what's happening at <strong>${locationName}</strong>.</p>
         </div>
-    `;
-}
 
-/**
- * Generates the HTML for a single critical item in the alerts list.
- */
-export function createCriticalItemHtml(item) {
-    const stockStatusClass = item.currentStock <= item.reorderPoint / 2 ? 'critical' : 'low';
-
-    return `
-        <div class="critical-item-entry">
-            <div class="critical-indicator-circle ${stockStatusClass}">
-                <span class="critical-stock-count">${item.currentStock}</span>
-            </div>
-            <div class="critical-item-details">
-                <p class="critical-item-name">${item.name} (${item.unit || 'units'})</p>
-                <span class="critical-reorder-info">Reorder Pt: ${item.reorderPoint}</span>
-            </div>
-        </div>
-    `;
-}
-
-/**
- * Generates the HTML for a single recent waste log entry.
- */
-export function createRecentWasteItemHtml(logEntry) {
-    const timestampDate = logEntry.timestamp instanceof firebase.firestore.Timestamp
-                            ? logEntry.timestamp.toDate().toLocaleString()
-                            : (logEntry.timestamp ? new Date(logEntry.timestamp.seconds * 1000).toLocaleString() : 'N/A');
-
-    const displayReason = logEntry.reason.length > 30 ? logEntry.reason.substring(0, 27) + '...' : logEntry.reason;
-
-    return `
-        <li class="waste-log-item dashboard-waste-item">
-            ${logEntry.item} | ${logEntry.quantity} ${logEntry.unit || 'units'} (${displayReason}) - <span class="waste-timestamp">${timestampDate}</span>
-        </li>
-    `;
-}
-
-/**
- * Generates the HTML for the Staff Training Summary card.
- */
-export function createStaffSummaryCardHtml(summaryData) {
-    const { totalEmployees, upToDateCount, locationAverages } = summaryData;
-
-    let locationBarsHtml = '';
-    // FIX: Check if locationAverages is defined and has items
-    if (locationAverages && locationAverages.length > 0) {
-        locationAverages.forEach(loc => {
-            // FIX: This now correctly builds the HTML for the vertical bar structure
-            locationBarsHtml += `
-                <div class="location-bar-item">
-                    <div class="location-bar-progress">
-                        <div class="bar-fill" style="height: ${loc.score}%;"></div>
+        <div class="dashboard-grid">
+            <!-- Key Metrics Row -->
+            <div class="dashboard-row metrics-row">
+                <div id="stockSummary" class="metric-card">
+                    <div class="metric-icon stock-icon"><i class="fas fa-boxes"></i></div>
+                    <div class="metric-content">
+                        <h3>Stock Status</h3>
+                        <div class="metric-value" id="stockStatusValue">Loading...</div>
                     </div>
-                    <span class="location-bar-label">${loc.name}</span>
                 </div>
-            `;
-        });
-    } else {
-        locationBarsHtml = '<p>No quiz data available.</p>';
-    }
+                <div id="wastageSummary" class="metric-card">
+                    <div class="metric-icon waste-icon"><i class="fas fa-trash-alt"></i></div>
+                    <div class="metric-content">
+                        <h3>Recent Waste</h3>
+                        <div class="metric-value" id="wasteStatusValue">Loading...</div>
+                    </div>
+                </div>
+                <div id="ordersSummary" class="metric-card">
+                    <div class="metric-icon order-icon"><i class="fas fa-truck"></i></div>
+                    <div class="metric-content">
+                        <h3>Pending Orders</h3>
+                        <div class="metric-value" id="ordersStatusValue">Loading...</div>
+                    </div>
+                </div>
+            </div>
 
+            <!-- Quick Actions & Links Row -->
+            <div class="dashboard-row links-row">
+                <div class="dashboard-card quick-links-card">
+                    <h3 class="card-title">Quick Actions</h3>
+                    <div class="quick-actions-grid">
+                        <button class="action-btn" id="quickAddStockBtn">
+                            <i class="fas fa-plus-circle"></i> Add Stock
+                        </button>
+                        <button class="action-btn" id="quickLogWasteBtn">
+                            <i class="fas fa-dumpster-fire"></i> Log Waste
+                        </button>
+                        <button class="action-btn" id="quickCreateOrderBtn">
+                            <i class="fas fa-file-invoice"></i> New Order
+                        </button>
+                    </div>
+                </div>
+
+                <div class="dashboard-card navigation-card">
+                    <h3 class="card-title">Management</h3>
+                    <div class="nav-links-grid">
+                        <div class="nav-link-item" onclick="window.mainApp.handleNavigationClick('stock-management')">
+                            <i class="fas fa-boxes"></i> <span>Stock</span>
+                        </div>
+                        <div class="nav-link-item" onclick="window.mainApp.handleNavigationClick('wastage-log')">
+                            <i class="fas fa-dumpster"></i> <span>Wastage</span>
+                        </div>
+                        <div class="nav-link-item" onclick="window.mainApp.handleNavigationClick('orders')">
+                            <i class="fas fa-shipping-fast"></i> <span>Orders</span>
+                        </div>
+                        <div class="nav-link-item" onclick="window.mainApp.handleNavigationClick('suppliers')">
+                            <i class="fas fa-handshake"></i> <span>Suppliers</span>
+                        </div>
+                        <div class="nav-link-item" onclick="window.mainApp.handleNavigationClick('staff')">
+                            <i class="fas fa-users"></i> <span>Staff</span>
+                        </div>
+                        <div class="nav-link-item" onclick="window.mainApp.handleNavigationClick('recruitment')">
+                            <i class="fas fa-user-plus"></i> <span>Recruitment</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Critical Alerts Row -->
+            <div class="dashboard-row alerts-row">
+                <div class="dashboard-card full-width">
+                    <h3 class="card-title">Critical Stock Alerts</h3>
+                    <div id="criticalStockList" class="critical-list">
+                        <p>Loading alerts...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+export function createCriticalItemHtml(item) {
     return `
-        <div class="staff-summary-content">
-            <div class="staff-summary-metrics">
-                <div class="metric-item">
-                    <span class="metric-value">${totalEmployees}</span>
-                    <span class="metric-label">Total Employees</span>
-                </div>
-                <div class="metric-item">
-                    <span class="metric-value">${upToDateCount}</span>
-                    <span class="metric-label">Training Complete</span>
-                </div>
-            </div>
-            <hr class="staff-summary-divider">
-            <div class="staff-summary-chart">
-                <label class="chart-label">Store Average Quiz Scores</label>
-                <div class="location-bars-container">
-                    ${locationBarsHtml}
-                </div>
-            </div>
+        <div class="critical-item">
+            <span class="item-name">${item.name}</span>
+            <span class="item-stock critical">${item.currentStock} ${item.unit}</span>
+            <span class="item-status">Reorder Point: ${item.reorderPoint}</span>
         </div>
     `;
 }
