@@ -8,7 +8,7 @@
     "lint:fix": "eslint . --ext .js --fix",
     "format": "prettier --write \"**/*.{js,html,css,json}\"",
     "format:check": "prettier --check \"**/*.{js,html,css,json}\"",
-    "build": "mkdir -p dist && cp *.js *.html dist/ 2>/dev/null || : && cp -r static assets templates handbook utils training_modules dist/ 2>/dev/null || :",
+    "build": "echo 'No build step required'",
     "dev": "firebase emulators:start",
     "deploy": "firebase deploy",
     "deploy:hosting": "firebase deploy --only hosting",

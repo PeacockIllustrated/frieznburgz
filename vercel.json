@@ -1,10 +1,10 @@
 {
     "rewrites": [
         {
-            "source": "/((?!.*\\.).*)",
+            "source": "/(.*)",
             "destination": "/index.html"
         }
     ],
     "cleanUrls": false,
-    "outputDirectory": "dist"
+    "outputDirectory": "."
 }
