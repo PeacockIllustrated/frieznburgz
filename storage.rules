@@ -1,0 +1,21 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Allow authenticated users to upload and view specials images
+    match /specials/{fileName} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Default rule: Allow authenticated users to access everything
+    match /{allPaths=**} {
+      allow read, write: if isAuthenticated();
+    }
+  }
+}

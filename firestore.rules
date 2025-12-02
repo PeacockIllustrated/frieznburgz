@@ -1,0 +1,170 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // --- Helper Functions ---
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/_internal/admin_config) &&
+             request.auth.uid in get(/databases/$(database)/documents/_internal/admin_config).data.adminUids;
+    }
+    
+    function getUserStaffData() {
+      return get(/databases/$(database)/documents/staff/$(request.auth.uid)).data;
+    }
+    
+    function hasLocationAccess(locationId) {
+      let staffData = getUserStaffData();
+      return staffData.locationId == 'all_locations' || staffData.locationId == locationId;
+    }
+
+    // Check if user is a manager or admin
+    function isManagerOrAdmin() {
+       // Optimisation: check isAdmin first to avoid extra read if possible, though getUserStaffData is needed for manager check
+       // Note: in production rules, caching or custom claims are better for this.
+       // Here we rely on the staff document.
+       return isAdmin() || (isAuthenticated() && getUserStaffData().role in ['manager', 'admin']);
+    }
+
+    // --- Collection Rules ---
+
+    // Staff collection
+    match /staff/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAdmin();
+    }
+    
+    // Locations
+    match /locations/{locationId} {
+      allow read: if isAuthenticated();
+      match /{document=**} {
+        allow read: if isAuthenticated();
+        allow write: if isAdmin();
+      }
+      match /items/{itemId} {
+        allow read: if isAuthenticated() && hasLocationAccess(locationId);
+        allow create, update: if isAuthenticated() && hasLocationAccess(locationId);
+        allow delete: if isAdmin();
+      }
+    }
+    
+    // Orders
+    match /orders/{orderId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAdmin();
+    }
+    
+    // Wastage
+    match /wastage/{wasteId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin();
+    }
+    
+    // --- Allergens Module Rules ---
+
+    // Menu Items: Admin writes, Staff reads
+    match /menuItems/{itemId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // Allow write for seeding/editing in this dev env
+    }
+    
+    // Allergen Versions: Admin writes (publish), Staff reads
+    match /allergenVersions/{versionId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+    
+    // Allergy Incidents
+    match /allergyIncidents/{incidentId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isManagerOrAdmin();
+    }
+
+    // Training Modules (Legacy)
+    match /trainingModules/{moduleId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // Allow write for seeding
+    }
+
+    // Training Quizzes (Legacy)
+    match /trainingQuizzes/{quizId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // Allow write for seeding
+    }
+
+    // Training Courses (New)
+    match /trainingCourses/{courseId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // Allow write for seeding
+    }
+
+    // Training Acknowledgements
+    match /trainingAcks/{ackId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin();
+    }
+
+    // --- End Allergens Module ---
+
+    // Loyalty
+    match /loyaltyCards/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAuthenticated();
+    }
+    
+    match /loyaltyPrograms/{programId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    match /completedLoyaltyCards/{cardId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+    
+    match /rewardsRedeemed/{redemptionId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+    }
+    
+    // User Training Progress
+    match /users/{userId} {
+      allow read: if isAuthenticated(); // Allow reading other users for staff summary
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Internal config
+    match /_internal/{document=**} {
+      allow read, write: if isAdmin();
+    }
+    
+    // Suppliers
+    match /suppliers/{supplierId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Rota
+    // Rota Shifts
+    match /shifts/{shiftId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isManagerOrAdmin();
+    }
+
+    // Specials Updates
+    match /specials_updates/{updateId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isManagerOrAdmin();
+    }
+  }
+}
