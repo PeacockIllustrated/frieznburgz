@@ -14,7 +14,8 @@ import {
     Truck,
     ShieldAlert,
     CalendarClock,
-    Briefcase
+    Briefcase,
+    Megaphone
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { auth } from "@/lib/firebase";
@@ -55,6 +56,7 @@ const navStructure: (NavItem | NavGroup)[] = [
             { name: "Suppliers", href: "/suppliers", icon: Truck },
             { name: "Wastage Log", href: "/wastage", icon: Trash2 },
             { name: "Allergens", href: "/allergens", icon: ShieldAlert },
+            { name: "Specials Updates", href: "/specials", icon: Megaphone },
         ]
     },
     {
