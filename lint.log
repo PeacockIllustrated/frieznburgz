@@ -1,0 +1,155 @@
+
+> friez-next@0.1.0 lint
+> eslint
+
+
+C:\Users\peaco\OneDrive\Desktop\antigravity\friez-burgz-stock\frieznburgz\src\app\allergens\page.tsx
+   7:10  warning  'Card' is defined but never used           @typescript-eslint/no-unused-vars
+   7:16  warning  'CardContent' is defined but never used    @typescript-eslint/no-unused-vars
+   7:29  warning  'CardHeader' is defined but never used     @typescript-eslint/no-unused-vars
+   7:41  warning  'CardTitle' is defined but never used      @typescript-eslint/no-unused-vars
+  12:5   warning  'AlertTriangle' is defined but never used  @typescript-eslint/no-unused-vars
+  15:5   warning  'FileText' is defined but never used       @typescript-eslint/no-unused-vars
+  18:10  warning  'Badge' is defined but never used          @typescript-eslint/no-unused-vars
+  22:10  warning  'cn' is defined but never used             @typescript-eslint/no-unused-vars
+  39:11  warning  'Incident' is defined but never used       @typescript-eslint/no-unused-vars
+  45:16  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+
+C:\Users\peaco\OneDrive\Desktop\antigravity\friez-burgz-stock\frieznburgz\src\app\login\page.tsx
+   7:8   warning  'Link' is defined but never used          @typescript-eslint/no-unused-vars
+  20:23  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  30:23  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\peaco\OneDrive\Desktop\antigravity\friez-burgz-stock\frieznburgz\src\app\orders\page.tsx
+  14:5  warning  'Search' is defined but never used                                                                                         @typescript-eslint/no-unused-vars
+  15:5  warning  'Clock' is defined but never used                                                                                          @typescript-eslint/no-unused-vars
+  16:5  warning  'CheckCircle2' is defined but never used                                                                                   @typescript-eslint/no-unused-vars
+  18:5  warning  'Truck' is defined but never used                                                                                          @typescript-eslint/no-unused-vars
+  19:5  warning  'ChevronDown' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+  71:8  warning  React Hook useEffect has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array             react-hooks/exhaustive-deps
+  77:8  warning  React Hook useEffect has a missing dependency: 'fetchSuppliersAndItems'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\peaco\OneDrive\Desktop\antigravity\friez-burgz-stock\frieznburgz\src\app\rota\page.tsx
+    6:75   warning  'CheckCircle2' is defined but never used                                                                                         @typescript-eslint/no-unused-vars
+   38:26   error    Unexpected any. Specify a different type                                                                                         @typescript-eslint/no-explicit-any
+   80:12   warning  'loading' is assigned a value but never used                                                                                     @typescript-eslint/no-unused-vars
+   94:12   warning  'isPrinting' is assigned a value but never used                                                                                  @typescript-eslint/no-unused-vars
+  126:8    warning  React Hook useEffect has missing dependencies: 'selectedDate' and 'weekEnd'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  376:104  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                  react/no-unescaped-entities
+  376:106  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                  react/no-unescaped-entities
+  497:120  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                  react/no-unescaped-entities
+  497:122  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                  react/no-unescaped-entities
+
+C:\Users\peaco\OneDrive\Desktop\antigravity\friez-burgz-stock\frieznburgz\src\app\stock\page.tsx
+    6:21  warning  'getLocationDisplayName' is defined but never used  @typescript-eslint/no-unused-vars
+    7:16  warning  'CardContent' is defined but never used             @typescript-eslint/no-unused-vars
+    7:29  warning  'CardHeader' is defined but never used              @typescript-eslint/no-unused-vars
+    7:41  warning  'CardTitle' is defined but never used               @typescript-eslint/no-unused-vars
+   14:5   warning  'Package' is defined but never used                 @typescript-eslint/no-unused-vars
+   15:5   warning  'Save' is defined but never used                    @typescript-eslint/no-unused-vars
+   17:5   warning  'CheckCircle2' is defined but never used            @typescript-eslint/no-unused-vars
+  145:19  warning  'logBatch' is assigned a value but never used       @typescript-eslint/no-unused-vars
+
+C:\Users\peaco\OneDrive\Desktop\antigravity\friez-burgz-stock\frieznburgz\src\app\suppliers\page.tsx
+  12:5  warning  'Truck' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\peaco\OneDrive\Desktop\antigravity\friez-burgz-stock\frieznburgz\src\app\training\page.tsx
+   96:77  error    Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  100:31  error    Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  194:36  warning  'node' is defined but never used                       @typescript-eslint/no-unused-vars
+  195:36  warning  'node' is defined but never used                       @typescript-eslint/no-unused-vars
+  196:36  warning  'node' is defined but never used                       @typescript-eslint/no-unused-vars
+  197:35  warning  'node' is defined but never used                       @typescript-eslint/no-unused-vars
+  198:36  warning  'node' is defined but never used                       @typescript-eslint/no-unused-vars
+  199:36  warning  'node' is defined but never used                       @typescript-eslint/no-unused-vars
+  205:40  warning  'node' is defined but never used                       @typescript-eslint/no-unused-vars
+  206:44  warning  'node' is defined but never used                       @typescript-eslint/no-unused-vars
+  483:35  warning  'activeColorClass' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\peaco\OneDrive\Desktop\antigravity\friez-burgz-stock\frieznburgz\src\app\wastage\page.tsx
+   6:21  warning  'getLocationDisplayName' is defined but never used  @typescript-eslint/no-unused-vars
+  11:42  warning  'Plus' is defined but never used                    @typescript-eslint/no-unused-vars
+  14:10  warning  'cn' is defined but never used                      @typescript-eslint/no-unused-vars
+
+C:\Users\peaco\OneDrive\Desktop\antigravity\friez-burgz-stock\frieznburgz\src\components\StaffDashboard.tsx
+  69:69  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  69:76  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\peaco\OneDrive\Desktop\antigravity\friez-burgz-stock\frieznburgz\src\components\layout\Sidebar.tsx
+  113:50  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\peaco\OneDrive\Desktop\antigravity\friez-burgz-stock\frieznburgz\src\components\rota\AddShiftDrawer.tsx
+  223:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\peaco\OneDrive\Desktop\antigravity\friez-burgz-stock\frieznburgz\src\components\rota\ShiftCard.tsx
+   73:38  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\peaco\OneDrive\Desktop\antigravity\friez-burgz-stock\frieznburgz\src\components\rota\ShiftCard.tsx:73:38
+  71 |                             <AlertCircle className="h-3 w-3 text-brand-khaki" />
+  72 |                         )}
+> 73 |                         {isAdmin && <ActionsMenu />}
+     |                                      ^^^^^^^^^^^ This component is created during render
+  74 |                     </div>
+  75 |                 </div>
+  76 |                 <div className="flex justify-between items-center print:flex-col print:items-start print:gap-0.5">
+
+C:\Users\peaco\OneDrive\Desktop\antigravity\friez-burgz-stock\frieznburgz\src\components\rota\ShiftCard.tsx:40:25
+  38 |     const roleBadgeColor = roleColors[shift.role] || "bg-gray-100 text-gray-700 hover:bg-gray-200";
+  39 |
+> 40 |     const ActionsMenu = () => (
+     |                         ^^^^^^^
+> 41 |         <DropdownMenu>
+     | ^^^^^^^^^^^^^^^^^^^^^^
+> 42 |             <DropdownMenuTrigger asChild>
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^
+> 55 |         </DropdownMenu>
+     | ^^^^^^^^^^^^^^^^^^^^^^
+> 56 |     );
+     | ^^^^^^ The component is created during render here
+  57 |
+  58 |     if (compact) {
+  59 |         return (  react-hooks/static-components
+  114:38  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\peaco\OneDrive\Desktop\antigravity\friez-burgz-stock\frieznburgz\src\components\rota\ShiftCard.tsx:114:38
+  112 |                             </Badge>
+  113 |                         )}
+> 114 |                         {isAdmin && <ActionsMenu />}
+      |                                      ^^^^^^^^^^^ This component is created during render
+  115 |                     </div>
+  116 |                 </div>
+  117 |
+
+C:\Users\peaco\OneDrive\Desktop\antigravity\friez-burgz-stock\frieznburgz\src\components\rota\ShiftCard.tsx:40:25
+  38 |     const roleBadgeColor = roleColors[shift.role] || "bg-gray-100 text-gray-700 hover:bg-gray-200";
+  39 |
+> 40 |     const ActionsMenu = () => (
+     |                         ^^^^^^^
+> 41 |         <DropdownMenu>
+     | ^^^^^^^^^^^^^^^^^^^^^^
+> 42 |             <DropdownMenuTrigger asChild>
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^
+> 55 |         </DropdownMenu>
+     | ^^^^^^^^^^^^^^^^^^^^^^
+> 56 |     );
+     | ^^^^^^ The component is created during render here
+  57 |
+  58 |     if (compact) {
+  59 |         return (                                                                                                                                                         react-hooks/static-components
+  135:25  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 react/no-unescaped-entities
+  135:39  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 react/no-unescaped-entities
+
+C:\Users\peaco\OneDrive\Desktop\antigravity\friez-burgz-stock\frieznburgz\src\components\ui\card.tsx
+  4:11  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+C:\Users\peaco\OneDrive\Desktop\antigravity\friez-burgz-stock\frieznburgz\src\components\ui\input.tsx
+  4:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+✖ 62 problems (19 errors, 43 warnings)
+

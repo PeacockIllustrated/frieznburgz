@@ -1,0 +1,37 @@
+
+> friez-next@0.1.0 build
+> next build
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+   ▲ Next.js 16.0.5 (Turbopack)
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+Turbopack build encountered 1 warnings:
+[next]/internal/font/google/inter_5972bc34.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap
+
+Import trace:
+  Server Component:
+    [next]/internal/font/google/inter_5972bc34.module.css
+    [next]/internal/font/google/inter_5972bc34.js
+    ./src/app/layout.tsx
+
+
+
+> Build error occurred
+Error: Turbopack build failed with 1 errors:
+[next]/internal/font/google/inter_5972bc34.module.css
+next/font: error:
+Failed to fetch `Inter` from Google Fonts.
+
+Import trace:
+  Server Component:
+    [next]/internal/font/google/inter_5972bc34.module.css
+    [next]/internal/font/google/inter_5972bc34.js
+    ./src/app/layout.tsx
+
+
+    at ignore-listed frames
