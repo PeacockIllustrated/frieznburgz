@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, CheckCircle2, AlertTriangle, Trash2, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { SpecialsUpdates } from "@/components/SpecialsUpdates";
 
 interface StaffData {
     uid: string;
@@ -274,6 +275,11 @@ export function AdminDashboard() {
             {/* Main Content Grid */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 
+                {/* Specials Updates - Takes up full height on left/center */}
+                <div className="col-span-1 lg:col-span-1 lg:row-span-2 h-[600px]">
+                    <SpecialsUpdates />
+                </div>
+
                 {/* Location Performance */}
                 <Card className="col-span-1 lg:col-span-1">
                     <CardHeader>
@@ -329,65 +335,67 @@ export function AdminDashboard() {
                 </Card>
 
                 {/* Recent Wastage & Low Stock (Combined Column) */}
-                <div className="col-span-1 lg:col-span-1 space-y-6">
-                    {/* Low Stock Widget */}
-                    <Card className="border-t-4 border-t-orange-500">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-oswald font-medium text-text-muted uppercase tracking-wider flex items-center gap-2">
-                                <AlertTriangle className="h-4 w-4 text-orange-500" />
-                                Low Stock Alerts
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-3">
-                                {lowStockItems.length === 0 ? (
-                                    <p className="text-sm text-text-muted">Inventory levels are healthy.</p>
-                                ) : (
-                                    lowStockItems.map((item) => (
-                                        <div key={item.id} className="flex items-center justify-between text-sm">
-                                            <span className="font-medium text-brand-dark truncate max-w-[120px]" title={item.name}>{item.name}</span>
-                                            <div className="flex items-center gap-2">
-                                                <Badge variant="outline" className="text-xs border-orange-200 text-orange-700 bg-orange-50">
-                                                    {item.currentStock} {item.unit}
-                                                </Badge>
-                                                <span className="text-[10px] text-text-muted uppercase">{item.locationName}</span>
+                <div className="col-span-1 lg:col-span-2 space-y-6">
+                    <div className="grid gap-6 md:grid-cols-2">
+                        {/* Low Stock Widget */}
+                        <Card className="border-t-4 border-t-orange-500">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-oswald font-medium text-text-muted uppercase tracking-wider flex items-center gap-2">
+                                    <AlertTriangle className="h-4 w-4 text-orange-500" />
+                                    Low Stock Alerts
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-3">
+                                    {lowStockItems.length === 0 ? (
+                                        <p className="text-sm text-text-muted">Inventory levels are healthy.</p>
+                                    ) : (
+                                        lowStockItems.map((item) => (
+                                            <div key={item.id} className="flex items-center justify-between text-sm">
+                                                <span className="font-medium text-brand-dark truncate max-w-[120px]" title={item.name}>{item.name}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <Badge variant="outline" className="text-xs border-orange-200 text-orange-700 bg-orange-50">
+                                                        {item.currentStock} {item.unit}
+                                                    </Badge>
+                                                    <span className="text-[10px] text-text-muted uppercase">{item.locationName}</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
+                                        ))
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
 
-                    {/* Recent Wastage Widget */}
-                    <Card className="border-t-4 border-t-brand-khaki">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-oswald font-medium text-text-muted uppercase tracking-wider flex items-center gap-2">
-                                <Trash2 className="h-4 w-4 text-brand-khaki" />
-                                Recent Wastage
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-3">
-                                {recentWastage.length === 0 ? (
-                                    <p className="text-sm text-text-muted">No recent wastage logged.</p>
-                                ) : (
-                                    recentWastage.map((waste) => (
-                                        <div key={waste.id} className="flex items-center justify-between text-sm">
-                                            <div>
-                                                <p className="font-medium text-brand-dark">{waste.item}</p>
-                                                <p className="text-[10px] text-text-muted">{waste.reason}</p>
+                        {/* Recent Wastage Widget */}
+                        <Card className="border-t-4 border-t-brand-khaki">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-oswald font-medium text-text-muted uppercase tracking-wider flex items-center gap-2">
+                                    <Trash2 className="h-4 w-4 text-brand-khaki" />
+                                    Recent Wastage
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-3">
+                                    {recentWastage.length === 0 ? (
+                                        <p className="text-sm text-text-muted">No recent wastage logged.</p>
+                                    ) : (
+                                        recentWastage.map((waste) => (
+                                            <div key={waste.id} className="flex items-center justify-between text-sm">
+                                                <div>
+                                                    <p className="font-medium text-brand-dark">{waste.item}</p>
+                                                    <p className="text-[10px] text-text-muted">{waste.reason}</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="font-bold text-brand-red">-{waste.quantity} {waste.unit}</p>
+                                                    <p className="text-[10px] text-text-muted">{waste.locationName}</p>
+                                                </div>
                                             </div>
-                                            <div className="text-right">
-                                                <p className="font-bold text-brand-red">-{waste.quantity} {waste.unit}</p>
-                                                <p className="text-[10px] text-text-muted">{waste.locationName}</p>
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
+                                        ))
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
             </div>
         </div>
